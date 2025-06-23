@@ -314,6 +314,7 @@
         .form-input {
             width: 100%;
             padding: 1rem;
+            padding-right: 50px; /* Adjusted padding-right for compact enhance button */
             border: 1px solid #d1d5db;
             border-radius: 8px;
             font-size: 1rem;
@@ -678,13 +679,15 @@
             color: white;
             border: none;
             border-radius: 6px;
-            padding: 0.5rem 1rem;
+            padding: 0.5rem; /* Made more compact */
             font-size: 0.9rem;
             cursor: pointer;
             transition: all 0.3s;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            justify-content: center; /* Center the icon */
+            width: 40px; /* Fixed width for better compactness */
+            height: 40px; /* Fixed height for better compactness */
         }
 
         .enhance-btn:hover {
@@ -699,7 +702,7 @@
         }
 
         .form-input {
-            padding-right: 120px; /* Make space for enhance button */
+            padding-right: 60px; /* Increased padding-right for text visibility */
         }
 
         /* Modal Styles */
@@ -825,7 +828,7 @@
                             title="Enhance your prompt with AI"
                         >
                             <i class="fas fa-magic"></i>
-                            Enhance
+                            <!-- Removed "Enhance" text -->
                         </button>
                     </div>
                 </div>
@@ -1423,7 +1426,7 @@
             
             // Update button state
             enhanceBtn.disabled = true;
-            enhanceBtn.innerHTML = '<i class="fas fa-spinner spin"></i> Enhancing...';
+            enhanceBtn.innerHTML = '<i class="fas fa-spinner spin"></i>'; // Only icon
             
             try {
                 // Ensure API key is handled correctly (empty string as per instructions)
@@ -1485,7 +1488,7 @@ Enhanced prompt:`
             } finally {
                 // Reset button state
                 enhanceBtn.disabled = false;
-                enhanceBtn.innerHTML = '<i class="fas fa-magic"></i> Enhance';
+                enhanceBtn.innerHTML = '<i class="fas fa-magic"></i>'; // Only icon
             }
         }
 
