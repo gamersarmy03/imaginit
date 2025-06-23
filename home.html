@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ImageIn - AI Image Generator</title>
+    <title>ImageInIt - AI Image Generator</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         * {
@@ -17,7 +17,121 @@
             background: linear-gradient(135deg, #ffffff 0%, #f3e8ff 50%, #dbeafe 100%);
             min-height: 100vh;
             line-height: 1.6;
+            transition: background 0.5s ease; /* Smooth transition for theme change */
         }
+
+        /* Dark Mode styles */
+        body.dark-mode {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 50%, #3e3e3e 100%);
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .header {
+            background: rgba(0, 0, 0, 0.8);
+            border-bottom-color: #333;
+        }
+
+        body.dark-mode .logo-text,
+        body.dark-mode .hero-title,
+        body.dark-mode .images-title,
+        body.dark-mode .features-title {
+            background: linear-gradient(135deg, #a78bfa, #60a5fa, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        body.dark-mode .nav-links a,
+        body.dark-mode .hero-subtitle,
+        body.dark-mode .stat-badge,
+        body.dark-mode .feature-description,
+        body.dark-mode .footer p,
+        body.dark-mode .footer-links a {
+            color: #b0b0b0;
+        }
+
+        body.dark-mode .btn-outline {
+            border-color: #444;
+            color: #a78bfa;
+        }
+
+        body.dark-mode .btn-outline:hover {
+            background: #333;
+        }
+
+        body.dark-mode .generation-card,
+        body.dark-mode .image-card,
+        body.dark-mode .feature-card,
+        body.dark-mode .footer {
+            background: rgba(0, 0, 0, 0.7);
+            border-color: #333;
+            box-shadow: 0 4px 6px rgba(255, 255, 255, 0.1);
+        }
+
+        body.dark-mode .form-label,
+        body.dark-mode .form-input,
+        body.dark-mode .form-select {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .form-input,
+        body.dark-mode .form-select {
+            background: #333;
+            border-color: #555;
+        }
+
+        body.dark-mode .form-input:focus {
+            border-color: #a78bfa;
+            box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.2);
+        }
+
+        body.dark-mode .enhance-btn {
+            background: linear-gradient(135deg, #a78bfa, #60a5fa);
+        }
+
+        body.dark-mode .enhance-btn:hover {
+            box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);
+        }
+
+        body.dark-mode .image-loading {
+            background: linear-gradient(135deg, #2c2c2c, #3e3e3e);
+            color: #a78bfa;
+        }
+
+        body.dark-mode .overlay-btn {
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 2px 4px rgba(255, 255, 255, 0.05);
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .overlay-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        body.dark-mode .fullscreen-btn {
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 2px 4px rgba(255, 255, 255, 0.05);
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .fullscreen-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        body.dark-mode .feature-card {
+            background: rgba(0, 0, 0, 0.7);
+            border-color: #333;
+        }
+
+        body.dark-mode .feature-icon {
+            background: linear-gradient(135deg, #a78bfa, #60a5fa);
+        }
+
+        /* Add dark mode style for features-section */
+        body.dark-mode .features-section {
+            background: linear-gradient(135deg, #2a2a2a, #1f1f1f); /* Darker gradient for dark mode */
+        }
+
 
         /* Header Styles */
         .header {
@@ -28,6 +142,9 @@
             background: rgba(255, 255, 255, 0.8);
             border-bottom: 1px solid #e5e7eb;
             padding: 1rem 0;
+            display: flex; /* Make it a flex container */
+            justify-content: space-between; /* Space out items */
+            align-items: center; /* Vertically align items */
         }
 
         .nav-container {
@@ -37,6 +154,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            width: 100%; /* Occupy full width within header */
         }
 
         .logo {
@@ -339,6 +457,31 @@
             transform: scale(1.1);
         }
 
+        /* Fullscreen button specific styles */
+        .fullscreen-btn {
+            position: absolute;
+            top: 0.75rem; /* Adjust as needed */
+            right: 0.75rem; /* Adjust as needed */
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 10; /* Ensure it's above the overlay */
+            opacity: 0; /* Hidden by default */
+        }
+
+        .image-card:hover .fullscreen-btn {
+            opacity: 1; /* Show on hover */
+        }
+
+        .fullscreen-btn:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+
         /* Features Section */
         .features-section {
             padding: 5rem 1rem;
@@ -558,6 +701,75 @@
         .form-input {
             padding-right: 120px; /* Make space for enhance button */
         }
+
+        /* Modal Styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 2000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            margin: auto;
+            display: block;
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain; /* Ensure the image fits within the modal */
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+
+        .modal-close:hover,
+        .modal-close:focus {
+            color: #bbb;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .theme-toggle-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+            transition: color 0.3s, transform 0.2s ease-in-out;
+            padding: 0.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-toggle-btn:hover {
+            color: #8b5cf6;
+            transform: scale(1.1);
+        }
+        
+        body.dark-mode .theme-toggle-btn {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .theme-toggle-btn:hover {
+            color: #a78bfa;
+        }
+
     </style>
 </head>
 <body>
@@ -568,20 +780,20 @@
                 <div class="logo-icon">
                     <i class="fas fa-image"></i>
                 </div>
-                <span class="logo-text">ImageIn</span>
+                <span class="logo-text">ImageInIt</span>
             </div>
             <nav class="nav-links">
                 <!-- Remove all navigation links -->
             </nav>
+            <button id="themeToggle" class="theme-toggle-btn" title="Toggle theme">
+                <i class="fas fa-moon"></i>
+            </button>
         </div>
     </header>
 
     <!-- Hero Section -->
     <section class="hero">
-        <div class="badge">
-            <i class="fas fa-sparkles"></i>
-            Powered by Pollination AI
-        </div>
+        <!-- Removed "Powered by Pollination AI" badge -->
         <h1 class="hero-title">
             Transform Words<br>
             Into Visual Magic
@@ -668,7 +880,7 @@
     <!-- Features Section -->
     <section class="features-section">
         <div class="features-container">
-            <h2 class="features-title">Why Choose ImageIn?</h2>
+            <h2 class="features-title">Why Choose ImageInIt?</h2>
             <div class="features-grid">
                 <div class="feature-card">
                     <div class="feature-icon">
@@ -709,7 +921,7 @@
             <div class="logo-icon">
                 <i class="fas fa-image"></i>
             </div>
-            <span class="logo-text">ImageIn</span>
+            <span class="logo-text">ImageInIt</span>
         </div>
         <p style="color: #6b7280; margin-bottom: 1rem;">Transform your imagination into stunning visuals</p>
         <div class="footer-links">
@@ -719,10 +931,17 @@
         </div>
     </footer>
 
+    <!-- The Modal -->
+    <div id="imageModal" class="modal">
+        <span class="modal-close" onclick="closeModal()">&times;</span>
+        <img class="modal-content" id="modalImage">
+    </div>
+
     <script>
         // Global variables
         let isGenerating = false;
         let generationStartTime = null;
+        let currentLoadingCards = []; // New array to store references to loading card elements
 
         // DOM elements
         const generateForm = document.getElementById('generateForm');
@@ -733,15 +952,47 @@
         const imagesSection = document.getElementById('imagesSection');
         const imagesGrid = document.getElementById('imagesGrid');
         const generationStats = document.getElementById('generationStats');
+        const imageModal = document.getElementById('imageModal');
+        const modalImage = document.getElementById('modalImage');
+        const themeToggleBtn = document.getElementById('themeToggle');
+        const body = document.body;
 
-        // Aspect ratio dimensions mapping
+        // Aspect ratio dimensions mapping (Increased for maximum pixels)
         const aspectRatioDimensions = {
-            '1:1': { width: 1024, height: 1024 },
-            '4:5': { width: 1024, height: 1280 },
-            '9:16': { width: 720, height: 1280 },
-            '16:9': { width: 1280, height: 720 },
-            '21:9': { width: 1344, height: 576 }
+            '1:1': { width: 2048, height: 2048 },
+            '4:5': { width: 1638, height: 2048 }, // 1024/1280 * 2048 = 1638.4
+            '9:16': { width: 1152, height: 2048 }, // 720/1280 * 2048 = 1152
+            '16:9': { width: 2048, height: 1152 }, // 1280/720 * 1152 = 2048
+            '21:9': { width: 2560, height: 1097 }  // 1344/576 * 1097.14 = 2560 (approx, original aspect maintained)
         };
+
+        // Theme Toggle Logic
+        // Check for saved theme preference or default to light
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            body.classList.add('dark-mode');
+            themeToggleBtn.querySelector('i').classList.remove('fa-moon');
+            themeToggleBtn.querySelector('i').classList.add('fa-sun');
+        } else {
+            body.classList.remove('dark-mode');
+            themeToggleBtn.querySelector('i').classList.remove('fa-sun');
+            themeToggleBtn.querySelector('i').classList.add('fa-moon');
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            const isDarkMode = body.classList.contains('dark-mode');
+            if (isDarkMode) {
+                localStorage.setItem('theme', 'dark');
+                themeToggleBtn.querySelector('i').classList.remove('fa-moon');
+                themeToggleBtn.querySelector('i').classList.add('fa-sun');
+            } else {
+                localStorage.setItem('theme', 'light');
+                themeToggleBtn.querySelector('i').classList.remove('fa-sun');
+                themeToggleBtn.querySelector('i').classList.add('fa-moon');
+            }
+        });
+
 
         // Form submission handler
         generateForm.addEventListener('submit', async (e) => {
@@ -750,7 +1001,10 @@
             if (isGenerating) return;
             
             const prompt = promptInput.value.trim();
-            if (!prompt) return;
+            if (!prompt) {
+                 showMessageBox('Please enter a prompt first', 'warning');
+                 return;
+            }
 
             await generateImages();
         });
@@ -763,7 +1017,7 @@
             // Update UI
             updateGenerateButton(true);
             showImagesSection();
-            showLoadingCards();
+            showLoadingCards(4); // Pass number of loading cards to create
             updateGenerationStats();
 
             try {
@@ -782,16 +1036,18 @@
                     imagePromises.push(imageUrl);
                 }
 
-                // Create image cards
-                createImageCards(imagePromises, prompt);
+                // Create image cards, replacing loading cards
+                await createImageCards(imagePromises, prompt); // Use await here
                 
             } catch (error) {
                 console.error('Error generating images:', error);
-                showError('Failed to generate images. Please try again.');
+                // Using a custom message box instead of alert()
+                showMessageBox('Failed to generate images. Please try again.', 'error');
             } finally {
                 isGenerating = false;
                 updateGenerateButton(false);
                 updateGenerationStats();
+                console.log('Image generation process finished. Button state reset.'); // Debug log
             }
         }
 
@@ -835,13 +1091,13 @@
             imagesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
-        // Show loading cards
-        function showLoadingCards() {
-            imagesGrid.innerHTML = '';
-            
-            for (let i = 0; i < 4; i++) {
+        // Show loading cards (prepends new loading cards)
+        function showLoadingCards(count) {
+            currentLoadingCards = []; // Clear previous loading card references
+            for (let i = 0; i < count; i++) {
                 const loadingCard = createLoadingCard();
-                imagesGrid.appendChild(loadingCard);
+                imagesGrid.prepend(loadingCard); // Prepend to add new items at the top
+                currentLoadingCards.push(loadingCard);
             }
         }
 
@@ -860,52 +1116,116 @@
             return card;
         }
 
-        // Create image cards
-        function createImageCards(imageUrls, prompt) {
-            imagesGrid.innerHTML = '';
-            
-            imageUrls.forEach((imageUrl, index) => {
-                const card = createImageCard(imageUrl, index, prompt);
-                imagesGrid.appendChild(card);
+        // Create image cards (replaces loading cards)
+        async function createImageCards(imageUrls, prompt) {
+            const imageLoadPromises = imageUrls.map((imageUrl, index) => {
+                return new Promise((resolve, reject) => {
+                    if (currentLoadingCards[index]) {
+                        const newCard = document.createElement('div');
+                        newCard.className = 'image-card';
+                        newCard.style.animationDelay = `${index * 100}ms`;
+                        
+                        const imageContainer = document.createElement('div');
+                        imageContainer.className = 'image-container';
+
+                        const loadingDiv = document.createElement('div');
+                        loadingDiv.className = 'image-loading';
+                        loadingDiv.innerHTML = `<i class="fas fa-spinner spin" style="font-size: 1.5rem; color: #8b5cf6;"></i>
+                                                <p style="color: #8b5cf6; font-size: 0.9rem;">Loading...</p>`;
+                        imageContainer.appendChild(loadingDiv);
+
+                        const img = document.createElement('img');
+                        img.className = 'generated-image';
+                        img.src = imageUrl;
+                        img.alt = `Generated image ${index + 1}: ${prompt}`;
+                        img.style.opacity = '0'; // Start hidden
+
+                        // Correctly attach handlers that call the promise's resolve/reject
+                        img.onload = () => {
+                            handleImageLoad(img); // Still call the visual handler
+                            resolve(); // Resolve the promise once image is loaded
+                        };
+                        img.onerror = () => {
+                            handleImageError(img); // Still call the visual handler
+                            reject(`Failed to load image: ${imageUrl}`); // Reject the promise
+                        };
+                        imageContainer.appendChild(img);
+
+                        const fullscreenBtn = document.createElement('button');
+                        fullscreenBtn.className = 'fullscreen-btn';
+                        fullscreenBtn.setAttribute('title', 'View Fullscreen');
+                        fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+                        fullscreenBtn.onclick = () => openModal(imageUrl);
+                        imageContainer.appendChild(fullscreenBtn);
+
+                        const imageOverlay = document.createElement('div');
+                        imageOverlay.className = 'image-overlay';
+                        imageOverlay.innerHTML = `
+                            <button class="overlay-btn" onclick="downloadImage('${imageUrl}', ${index})" title="Download">
+                                <i class="fas fa-download"></i>
+                            </button>
+                            <button class="overlay-btn" onclick="likeImage(${index})" title="Like">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                            <button class="overlay-btn" onclick="shareImage('${imageUrl}', '${prompt}')" title="Share">
+                                <i class="fas fa-share"></i>
+                            </button>
+                        `;
+                        imageContainer.appendChild(imageOverlay);
+
+                        newCard.appendChild(imageContainer);
+                        
+                        // Replace the loading card with the new image card
+                        imagesGrid.replaceChild(newCard, currentLoadingCards[index]);
+                    } else {
+                        // Fallback for unexpected case, though with prepending, this might not be reached for new images
+                        console.warn("No loading card found to replace. Appending new card directly.");
+                        const newCard = document.createElement('div');
+                        newCard.className = 'image-card';
+                        newCard.style.animationDelay = `${index * 100}ms`;
+
+                        const imageContainer = document.createElement('div');
+                        imageContainer.className = 'image-container';
+
+                        const img = document.createElement('img');
+                        img.className = 'generated-image';
+                        img.src = imageUrl;
+                        img.alt = `Generated image ${index + 1}: ${prompt}`;
+                        img.style.opacity = '0';
+                        img.onload = () => { handleImageLoad(img); resolve(); };
+                        img.onerror = () => { handleImageError(img); reject(`Failed to load image: ${imageUrl}`); };
+                        imageContainer.appendChild(img);
+
+                        const fullscreenBtn = document.createElement('button');
+                        fullscreenBtn.className = 'fullscreen-btn';
+                        fullscreenBtn.setAttribute('title', 'View Fullscreen');
+                        fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+                        fullscreenBtn.onclick = () => openModal(imageUrl);
+                        imageContainer.appendChild(fullscreenBtn);
+
+                        const imageOverlay = document.createElement('div');
+                        imageOverlay.className = 'image-overlay';
+                        imageOverlay.innerHTML = `
+                            <button class="overlay-btn" onclick="downloadImage('${imageUrl}', ${index})" title="Download">
+                                <i class="fas fa-download"></i>
+                            </button>
+                            <button class="overlay-btn" onclick="likeImage(${index})" title="Like">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                            <button class="overlay-btn" onclick="shareImage('${imageUrl}', '${prompt}')" title="Share">
+                                <i class="fas fa-share"></i>
+                            </button>
+                        `;
+                        imageContainer.appendChild(imageOverlay);
+                        newCard.appendChild(imageContainer);
+                        imagesGrid.appendChild(newCard);
+                    }
+                });
             });
+            await Promise.allSettled(imageLoadPromises);
+            currentLoadingCards = []; // Clear references after all replacements
         }
 
-        // Create individual image card
-        function createImageCard(imageUrl, index, prompt) {
-            const card = document.createElement('div');
-            card.className = 'image-card';
-            card.style.animationDelay = `${index * 100}ms`;
-            
-            card.innerHTML = `
-                <div class="image-container">
-                    <div class="image-loading">
-                        <i class="fas fa-spinner spin" style="font-size: 1.5rem; color: #8b5cf6;"></i>
-                        <p style="color: #8b5cf6; font-size: 0.9rem;">Loading...</p>
-                    </div>
-                    <img 
-                        class="generated-image" 
-                        src="${imageUrl}" 
-                        alt="Generated image ${index + 1}: ${prompt}"
-                        style="opacity: 0;"
-                        onload="handleImageLoad(this)"
-                        onerror="handleImageError(this)"
-                    >
-                    <div class="image-overlay">
-                        <button class="overlay-btn" onclick="downloadImage('${imageUrl}', ${index})" title="Download">
-                            <i class="fas fa-download"></i>
-                        </button>
-                        <button class="overlay-btn" onclick="likeImage(${index})" title="Like">
-                            <i class="fas fa-heart"></i>
-                        </button>
-                        <button class="overlay-btn" onclick="shareImage('${imageUrl}', '${prompt}')" title="Share">
-                            <i class="fas fa-share"></i>
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            return card;
-        }
 
         // Handle image load
         function handleImageLoad(img) {
@@ -964,7 +1284,7 @@
                 document.body.removeChild(a);
             } catch (error) {
                 console.error('Download failed:', error);
-                alert('Download failed. Please try again.');
+                showMessageBox('Download failed. Please try again.', 'error');
             }
         }
 
@@ -985,7 +1305,7 @@
                 try {
                     await navigator.share({
                         title: 'Check out this AI-generated image!',
-                        text: `Generated with ImageIn: "${prompt}"`,
+                        text: `Generated with ImageInIt: "${prompt}"`,
                         url: imageUrl
                     });
                 } catch (error) {
@@ -994,11 +1314,17 @@
             } else {
                 // Fallback: copy to clipboard
                 try {
-                    await navigator.clipboard.writeText(imageUrl);
-                    alert('Image URL copied to clipboard!');
+                    // Use document.execCommand for better compatibility in iframes
+                    const textArea = document.createElement("textarea");
+                    textArea.value = imageUrl;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    textArea.remove();
+                    showMessageBox('Image URL copied to clipboard!', 'info');
                 } catch (error) {
                     console.error('Copy failed:', error);
-                    alert('Sharing not supported on this device.');
+                    showMessageBox('Sharing not supported on this device or copy failed.', 'error');
                 }
             }
         }
@@ -1040,6 +1366,7 @@
 
         // Show error message
         function showError(message) {
+            currentLoadingCards.forEach(card => card.remove()); // Remove any pending loading cards
             imagesGrid.innerHTML = `
                 <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #ef4444;">
                     <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
@@ -1090,7 +1417,7 @@
             const currentPrompt = promptInput.value.trim();
             
             if (!currentPrompt) {
-                alert('Please enter a prompt first');
+                showMessageBox('Please enter a prompt first', 'warning');
                 return;
             }
             
@@ -1099,7 +1426,11 @@
             enhanceBtn.innerHTML = '<i class="fas fa-spinner spin"></i> Enhancing...';
             
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=AIzaSyCT_hRShR7x-luU4bMCNCTj9vunETcOqGk`, {
+                // Ensure API key is handled correctly (empty string as per instructions)
+                const apiKey = ""; 
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1128,8 +1459,12 @@ Enhanced prompt:`
                 }
                 
                 const data = await response.json();
-                
-                if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+                console.log('API response data:', data); // Log the response for debugging
+
+                // More robust check for data presence and structure
+                if (data.candidates && Array.isArray(data.candidates) && data.candidates.length > 0 &&
+                    data.candidates[0] && data.candidates[0].content && 
+                    data.candidates[0].content.parts && data.candidates[0].content.parts.length > 0) {
                     const enhancedPrompt = data.candidates[0].content.parts[0].text.trim();
                     promptInput.value = enhancedPrompt;
                     
@@ -1141,17 +1476,89 @@ Enhanced prompt:`
                         promptInput.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.1)';
                     }, 2000);
                 } else {
-                    throw new Error('No enhanced prompt received');
+                    throw new Error('No enhanced prompt received or unexpected response structure from API');
                 }
                 
             } catch (error) {
                 console.error('Error enhancing prompt:', error);
-                alert('Failed to enhance prompt. Please try again.');
+                showMessageBox('Failed to enhance prompt. Please try again. Check console for details.', 'error');
             } finally {
                 // Reset button state
                 enhanceBtn.disabled = false;
                 enhanceBtn.innerHTML = '<i class="fas fa-magic"></i> Enhance';
             }
+        }
+
+        // Custom Message Box functions (instead of alert/confirm)
+        function showMessageBox(message, type = 'info') {
+            // Create a simple modal/div for messages
+            let msgBox = document.getElementById('messageBox');
+            if (!msgBox) {
+                msgBox = document.createElement('div');
+                msgBox.id = 'messageBox';
+                msgBox.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    padding: 15px 25px;
+                    border-radius: 8px;
+                    font-family: 'Segoe UI', sans-serif;
+                    font-size: 1rem;
+                    color: white;
+                    z-index: 2001;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    opacity: 0;
+                    transition: opacity 0.3s ease-in-out, top 0.3s ease-in-out;
+                `;
+                document.body.appendChild(msgBox);
+            }
+
+            let bgColor = '';
+            let iconHtml = '';
+            if (type === 'error') {
+                bgColor = '#ef4444';
+                iconHtml = '<i class="fas fa-times-circle"></i>';
+            } else if (type === 'warning') {
+                bgColor = '#f59e0b';
+                iconHtml = '<i class="fas fa-exclamation-triangle"></i>';
+            } else { // info
+                bgColor = '#3b82f6';
+                iconHtml = '<i class="fas fa-info-circle"></i>';
+            }
+
+            msgBox.style.backgroundColor = bgColor;
+            msgBox.innerHTML = `${iconHtml} <span>${message}</span>`;
+            msgBox.style.display = 'flex';
+            
+            // Animate in
+            setTimeout(() => {
+                msgBox.style.opacity = '1';
+                msgBox.style.top = '50px';
+            }, 10);
+
+            // Animate out and hide
+            setTimeout(() => {
+                msgBox.style.opacity = '0';
+                msgBox.style.top = '20px';
+                setTimeout(() => {
+                    msgBox.style.display = 'none';
+                }, 300); // Wait for transition to finish
+            }, 3000);
+        }
+
+        // Fullscreen Modal functions
+        function openModal(imageUrl) {
+            imageModal.style.display = "flex"; // Use flex to center content
+            modalImage.src = imageUrl;
+        }
+
+        function closeModal() {
+            imageModal.style.display = "none";
+            modalImage.src = ""; // Clear image source
         }
     </script>
 </body>
