@@ -1203,33 +1203,24 @@
 
         // New function to handle replacing loading cards with actual image cards
         async function updateImageDisplayAfterGeneration(generatedUrls, prompt) {
-            const replacementPromises = generatedUrls.map((imageUrl, i) => {
+            const replacementPromises = generatedUrls.map((imageUrl, localBatchIndex) => { // localBatchIndex is 0, 1, 2, 3 for the current batch
                 return new Promise((resolve, reject) => {
-                    // The loading cards were prepended in `showLoadingCards`, 
-                    // so `currentLoadingCards[i]` refers to the i-th loading card in the *current batch*.
-                    const loadingCardToReplace = currentLoadingCards[i]; 
+                    const loadingCardToReplace = currentLoadingCards[localBatchIndex]; 
 
                     if (!loadingCardToReplace) {
-                        console.error(`Error: No loading card found at index ${i} for replacement.`);
-                        reject(`Missing loading card for image ${i}`);
+                        console.error(`Error: No loading card found at index ${localBatchIndex} for replacement.`);
+                        reject(`Missing loading card for image ${localBatchIndex}`);
                         return;
                     }
 
                     const newCard = document.createElement('div');
                     newCard.className = 'image-card';
-                    newCard.style.animationDelay = `${i * 100}ms`; // Apply animation delay for new batch
+                    newCard.style.animationDelay = `${localBatchIndex * 100}ms`; // Apply animation delay for new batch
 
                     // When this newCard is added to the DOM, its index in imagesGrid.children
                     // will correspond to its index in allGeneratedImageUrls because we unshifted.
-                    newCard.addEventListener('click', () => {
-                        // Find the global index of this newCard after it's in the DOM
-                        const globalIndex = Array.from(imagesGrid.children).indexOf(newCard);
-                        if (globalIndex !== -1) {
-                            openModal(globalIndex);
-                        } else {
-                            console.error("Could not find newCard in imagesGrid.children for modal opening.");
-                        }
-                    });
+                    // The localBatchIndex directly corresponds to the global index for the newly added items.
+                    newCard.addEventListener('click', () => openModal(localBatchIndex));
                     
                     const imageContainer = document.createElement('div');
                     imageContainer.className = 'image-container';
@@ -1237,7 +1228,7 @@
                     const img = document.createElement('img');
                     img.className = 'generated-image';
                     img.src = imageUrl;
-                    img.alt = `Generated image ${i + 1}: ${prompt}`;
+                    img.alt = `Generated image ${localBatchIndex + 1}: ${prompt}`;
                     img.style.opacity = '0'; // Start hidden
 
                     img.onload = () => {
@@ -1257,7 +1248,7 @@
                     downloadBtn.innerHTML = '<i class="fas fa-download"></i>';
                     downloadBtn.onclick = (e) => {
                         e.stopPropagation(); // Prevent card click from firing fullscreen
-                        downloadImage(imageUrl, i); // Use the URL and local index for filename
+                        downloadImage(imageUrl, localBatchIndex); // Pass localBatchIndex for filename (unique within session)
                     };
                     imageContainer.appendChild(downloadBtn);
 
@@ -1268,7 +1259,7 @@
                     likeBtn.innerHTML = '<i class="fas fa-heart"></i>';
                     likeBtn.onclick = (e) => {
                         e.stopPropagation(); // Prevent card click from firing fullscreen
-                        likeImage(i); // Use the local index for potential future tracking
+                        likeImage(localBatchIndex); // Pass localBatchIndex for potential future tracking
                     };
                     imageContainer.appendChild(likeBtn);
 
