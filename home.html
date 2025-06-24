@@ -435,7 +435,10 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: opacity 0.3s;
+            /* Initial blur and opacity for loading animation */
+            filter: blur(10px); 
+            opacity: 0;
+            transition: filter 1s ease-out, opacity 1s ease-out; /* Smooth transition for blur and opacity */
         }
 
         .image-loading {
@@ -1007,7 +1010,6 @@
         // Global variables
         let isGenerating = false;
         let generationStartTime = null;
-        let currentLoadingCards = []; // New array to store references to loading card elements
         let allGeneratedImageUrls = []; // To store ALL generated image URLs for modal navigation
         let currentModalImageIndex = 0; // To track the index of the image currently shown in modal
 
@@ -1091,51 +1093,121 @@
             isGenerating = true;
             generationStartTime = Date.now();
             
-            // Clear all previous images and URLs for a fresh generation
-            imagesGrid.innerHTML = ''; // This explicitly clears the grid
-            allGeneratedImageUrls = []; // Clear the global array for new batch
-
             // Update UI
             updateGenerateButton(true);
             showImagesSection();
 
             const numImagesToGenerate = 4;
-            // Show loading cards will append 4 new loading cards to an empty grid
-            showLoadingCards(numImagesToGenerate); 
+            const currentPrompt = promptInput.value.trim();
+            const aspectRatio = aspectRatioSelect.value;
+            const imageStyle = imageStyleSelect.value;
+
+            const newGeneratedUrls = []; // Store URLs for the current batch
+            for (let i = 0; i < numImagesToGenerate; i++) {
+                const enhancedPrompt = createEnhancedPrompt(currentPrompt, imageStyle);
+                const seed = Math.floor(Math.random() * 1000000) + i;
+                const dimensions = aspectRatioDimensions[aspectRatio];
+                const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(enhancedPrompt)}?width=${dimensions.width}&height=${dimensions.height}&seed=${seed}&enhance=true&nologo=true`;
+                newGeneratedUrls.push(imageUrl);
+            }
+
+            // Insert the new URLs at the beginning of the global array
+            // This ensures new images are at index 0, 1, 2, 3 in allGeneratedImageUrls
+            allGeneratedImageUrls.splice(0, 0, ...newGeneratedUrls);
+
+            // Create and prepend loading cards for the new batch
+            const loadingCardsForCurrentBatch = [];
+            // Iterate backwards to prepend elements so they appear in the correct visual order (LC0, LC1, LC2, LC3)
+            for (let i = numImagesToGenerate - 1; i >= 0; i--) {
+                const loadingCard = createLoadingCard();
+                imagesGrid.prepend(loadingCard);
+                // Store references to the loading cards in their original generated order (LC0, LC1, LC2, LC3)
+                loadingCardsForCurrentBatch.unshift(loadingCard); 
+            }
+            
+            const imageReplacementPromises = newGeneratedUrls.map((imageUrl, localIndex) => {
+                return new Promise((resolve) => {
+                    // The loading card at 'localIndex' in loadingCardsForCurrentBatch corresponds to 'imageUrl'
+                    const loadingCardElement = loadingCardsForCurrentBatch[localIndex]; 
+
+                    if (!loadingCardElement) {
+                        console.error(`Error: No loading card found for localIndex ${localIndex}.`);
+                        resolve(); // Resolve to not block Promise.all
+                        return;
+                    }
+
+                    const newCard = document.createElement('div');
+                    newCard.className = 'image-card';
+                    newCard.style.animationDelay = `${localIndex * 100}ms`;
+
+                    // The global index for this image in allGeneratedImageUrls is its localIndex within this new batch,
+                    // because newGeneratedUrls was spliced at the beginning of allGeneratedImageUrls.
+                    const globalIndexInAllImages = localIndex;
+
+                    newCard.addEventListener('click', () => openModal(globalIndexInAllImages));
+
+                    const imageContainer = document.createElement('div');
+                    imageContainer.className = 'image-container';
+
+                    const img = document.createElement('img');
+                    img.className = 'generated-image';
+                    img.src = imageUrl;
+                    img.alt = `Generated image ${localIndex + 1}: ${currentPrompt}`;
+                    img.style.opacity = '0';
+                    img.style.filter = 'blur(10px)';
+
+                    img.onload = () => {
+                        handleImageLoad(img);
+                        resolve();
+                    };
+                    img.onerror = () => {
+                        handleImageError(img);
+                        resolve(); 
+                    };
+                    imageContainer.appendChild(img);
+
+                    const downloadBtn = document.createElement('button');
+                    downloadBtn.className = 'download-btn';
+                    downloadBtn.setAttribute('title', 'Download Image');
+                    downloadBtn.innerHTML = '<i class="fas fa-download"></i>';
+                    downloadBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        // Use globalIndexInAllImages to refer to the correct URL in the allGeneratedImageUrls array
+                        downloadImage(allGeneratedImageUrls[globalIndexInAllImages], globalIndexInAllImages); 
+                    };
+                    imageContainer.appendChild(downloadBtn);
+
+                    const likeBtn = document.createElement('button');
+                    likeBtn.className = 'like-btn';
+                    likeBtn.setAttribute('title', 'Like Image');
+                    likeBtn.innerHTML = '<i class="fas fa-heart"></i>';
+                    likeBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        // Use globalIndexInAllImages to refer to the correct image for liking
+                        likeImage(globalIndexInAllImages);
+                    };
+                    imageContainer.appendChild(likeBtn);
+
+                    newCard.appendChild(imageContainer);
+                    
+                    if (loadingCardElement.parentNode === imagesGrid) { // Ensure it's still in the DOM before replacing
+                         imagesGrid.replaceChild(newCard, loadingCardElement);
+                    } else {
+                         console.warn("Loading card not found in DOM for replacement, appending new card instead.", loadingCardElement);
+                         imagesGrid.appendChild(newCard); 
+                    }
+                });
+            });
 
             try {
-                const prompt = promptInput.value.trim();
-                const aspectRatio = aspectRatioSelect.value;
-                const imageStyle = imageStyleSelect.value;
-                
-                const imageGenerationPromises = [];
-                for (let i = 0; i < numImagesToGenerate; i++) {
-                    const enhancedPrompt = createEnhancedPrompt(prompt, imageStyle);
-                    const seed = Math.floor(Math.random() * 1000000) + i;
-                    const dimensions = aspectRatioDimensions[aspectRatio];
-                    
-                    const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(enhancedPrompt)}?width=${dimensions.width}&height=${dimensions.height}&seed=${seed}&enhance=true&nologo=true`;
-                    imageGenerationPromises.push(imageUrl);
-                }
-
-                // Await all image URLs (strings) for the current generation
-                const generatedUrls = await Promise.all(imageGenerationPromises);
-
-                // Add the new URLs to the global array. Since we cleared it earlier,
-                // this will be the *only* set of URLs, and in the correct order (0-3).
-                allGeneratedImageUrls = generatedUrls;
-
-                // Update the display by replacing loading cards with actual images
-                await updateImageDisplayAfterGeneration(generatedUrls, prompt);
-                
+                await Promise.all(imageReplacementPromises);
             } catch (error) {
-                console.error('Error generating images:', error);
-                showMessageBox('Failed to generate images. Please try again.', 'error');
+                console.error("Error during image replacement:", error);
+                showMessageBox('Some images failed to load. Please try again.', 'error');
             } finally {
                 isGenerating = false;
                 updateGenerateButton(false);
                 updateGenerationStats();
-                console.log('Image generation process finished. Button state reset.');
             }
         }
 
@@ -1179,19 +1251,6 @@
             imagesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
-        // Show loading cards (appends new loading cards)
-        // This function will create loading cards and append them.
-        // `currentLoadingCards` will now directly correspond to the order in `imagesGrid.children`.
-        function showLoadingCards(count) {
-            imagesGrid.innerHTML = ''; // Clear existing content for new generation
-            currentLoadingCards = []; // Reset for the new batch
-            for (let i = 0; i < count; i++) {
-                const loadingCard = createLoadingCard();
-                imagesGrid.appendChild(loadingCard); // Append to DOM, maintaining natural order
-                currentLoadingCards.push(loadingCard); // Store reference in order
-            }
-        }
-
         // Create loading card
         function createLoadingCard() {
             const card = document.createElement('div');
@@ -1207,82 +1266,15 @@
             return card;
         }
 
-        // Function to handle replacing loading cards with actual image cards
-        async function updateImageDisplayAfterGeneration(generatedUrls, prompt) {
-            const replacementPromises = generatedUrls.map((imageUrl, index) => { // index is 0, 1, 2, 3
-                return new Promise((resolve, reject) => {
-                    const loadingCardToReplace = currentLoadingCards[index]; // Direct map
-                    
-                    if (!loadingCardToReplace) {
-                        console.error(`Error: No loading card found at index ${index} for replacement.`);
-                        reject(`Missing loading card for image ${index}`);
-                        return;
-                    }
-
-                    const newCard = document.createElement('div');
-                    newCard.className = 'image-card';
-                    newCard.style.animationDelay = `${index * 100}ms`; 
-                    
-                    // The click listener needs to know its index within the current allGeneratedImageUrls array (0-3).
-                    newCard.addEventListener('click', () => openModal(index));
-                    
-                    const imageContainer = document.createElement('div');
-                    imageContainer.className = 'image-container';
-
-                    const img = document.createElement('img');
-                    img.className = 'generated-image';
-                    img.src = imageUrl;
-                    img.alt = `Generated image ${index + 1}: ${prompt}`;
-                    img.style.opacity = '0'; 
-
-                    img.onload = () => {
-                        handleImageLoad(img);
-                        resolve();
-                    };
-                    img.onerror = () => {
-                        handleImageError(img);
-                        reject(`Failed to load image: ${imageUrl}`);
-                    };
-                    imageContainer.appendChild(img);
-
-                    // Download button (top-right)
-                    const downloadBtn = document.createElement('button');
-                    downloadBtn.className = 'download-btn';
-                    downloadBtn.setAttribute('title', 'Download Image');
-                    downloadBtn.innerHTML = '<i class="fas fa-download"></i>';
-                    downloadBtn.onclick = (e) => {
-                        e.stopPropagation(); // Prevent card click from firing fullscreen
-                        downloadImage(imageUrl, index); 
-                    };
-                    imageContainer.appendChild(downloadBtn);
-
-                    // Like button (bottom-right)
-                    const likeBtn = document.createElement('button');
-                    likeBtn.className = 'like-btn';
-                    likeBtn.setAttribute('title', 'Like Image');
-                    likeBtn.innerHTML = '<i class="fas fa-heart"></i>';
-                    likeBtn.onclick = (e) => {
-                        e.stopPropagation(); // Prevent card click from firing fullscreen
-                        likeImage(index); // Pass index for this specific image in the current batch
-                    };
-                    imageContainer.appendChild(likeBtn);
-
-                    newCard.appendChild(imageContainer);
-                    imagesGrid.replaceChild(newCard, loadingCardToReplace);
-                });
-            });
-            await Promise.allSettled(replacementPromises);
-            currentLoadingCards = []; // Clear references after replacements
-        }
-
-
         // Handle image load
         function handleImageLoad(img) {
             const loadingDiv = img.parentElement.querySelector('.image-loading');
             if (loadingDiv) {
                 loadingDiv.style.display = 'none';
             }
+            // Animate blur and opacity on load
             img.style.opacity = '1';
+            img.style.filter = 'none';
         }
 
         // Handle image error
@@ -1292,7 +1284,7 @@
                 loadingDiv.innerHTML = `
                     <i class="fas fa-exclamation-triangle" style="font-size: 1.5rem; color: #ef4444;"></i>
                     <p style="color: #ef4444; font-size: 0.9rem;">Failed to load</p>
-                    <button class="btn btn-outline" style="margin-top: 0.5rem; font-size: 0.8rem;" onclick="retryImage(this)">
+                    <button class="btn btn-outline" style="margin-top: 0.5rem; font-size: 0.8rem;" onclick="retryImage(this, '${img.src}')">
                         Retry
                     </button>
                 `;
@@ -1300,7 +1292,7 @@
         }
 
         // Retry image loading
-        function retryImage(button) {
+        function retryImage(button, imageUrlToRetry) {
             const card = button.closest('.image-card');
             const img = card.querySelector('.generated-image');
             const loadingDiv = card.querySelector('.image-loading');
@@ -1310,10 +1302,12 @@
                 <p style="color: #8b5cf6; font-size: 0.9rem;">Loading...</p>
             `;
             
+            // Reset blur and opacity for retry animation
+            img.style.opacity = '0';
+            img.style.filter = 'blur(10px)';
+
             // Force reload the image
-            const currentSrc = img.src;
-            img.src = '';
-            img.src = currentSrc;
+            img.src = imageUrlToRetry;
         }
 
         // Download image
@@ -1424,7 +1418,6 @@
 
         // Show error message
         function showError(message) {
-            // No need to remove currentLoadingCards here, as imagesGrid.innerHTML will be cleared.
             imagesGrid.innerHTML = `
                 <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #ef4444;">
                     <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
