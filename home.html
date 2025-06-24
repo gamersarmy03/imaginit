@@ -304,11 +304,32 @@
             margin-bottom: 1.5rem;
         }
 
+        .form-label-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
         .form-label {
             display: block;
             font-weight: 600;
             color: #374151;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0; /* Removed margin-bottom here */
+        }
+
+        .clear-prompt-btn {
+            background: none;
+            border: none;
+            font-size: 1rem;
+            color: #6b7280;
+            cursor: pointer;
+            transition: color 0.3s;
+            padding: 0.25rem;
+        }
+
+        .clear-prompt-btn:hover {
+            color: #ef4444; /* Red color on hover for clear */
         }
 
         .form-input {
@@ -395,6 +416,8 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: all 0.3s;
             animation: fadeInUp 0.6s ease-out both;
+            position: relative; /* Needed for absolute positioning of buttons */
+            cursor: pointer; /* Indicate clickability */
         }
 
         .image-card:hover {
@@ -426,40 +449,8 @@
             gap: 1rem;
         }
 
-        .image-overlay {
-            position: absolute;
-            inset: 0;
-            background: rgba(0, 0, 0, 0);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            opacity: 0;
-            transition: all 0.3s;
-        }
-
-        .image-card:hover .image-overlay {
-            background: rgba(0, 0, 0, 0.2);
-            opacity: 1;
-        }
-
-        .overlay-btn {
-            background: rgba(255, 255, 255, 0.9);
-            border: none;
-            border-radius: 8px;
-            padding: 0.5rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .overlay-btn:hover {
-            background: white;
-            transform: scale(1.1);
-        }
-
-        /* Fullscreen button specific styles */
-        .fullscreen-btn {
+        /* Download button now at top-right */
+        .download-btn {
             position: absolute;
             top: 0.75rem; /* Adjust as needed */
             right: 0.75rem; /* Adjust as needed */
@@ -470,18 +461,44 @@
             cursor: pointer;
             transition: all 0.3s;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            z-index: 10; /* Ensure it's above the overlay */
+            z-index: 10; /* Ensure it's above other elements */
             opacity: 0; /* Hidden by default */
         }
 
-        .image-card:hover .fullscreen-btn {
+        .image-card:hover .download-btn {
             opacity: 1; /* Show on hover */
         }
 
-        .fullscreen-btn:hover {
+        .download-btn:hover {
             background: white;
             transform: scale(1.1);
         }
+
+        /* Like button now at bottom-right */
+        .like-btn {
+            position: absolute;
+            bottom: 0.75rem; /* Adjust as needed */
+            right: 0.75rem; /* Adjust as needed */
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 10; /* Ensure it's above other elements */
+            opacity: 0; /* Hidden by default */
+        }
+
+        .image-card:hover .like-btn {
+            opacity: 1; /* Show on hover */
+        }
+
+        .like-btn:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+
 
         /* Features Section */
         .features-section {
@@ -714,7 +731,7 @@
             top: 0;
             width: 100%; /* Full width */
             height: 100%; /* Full height */
-            overflow: auto; /* Enable scroll if needed */
+            overflow: hidden; /* Prevent scrolling within modal */
             background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
             align-items: center;
             justify-content: center;
@@ -773,6 +790,45 @@
             color: #a78bfa;
         }
 
+        /* Modal Navigation Buttons */
+        .modal-nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s, transform 0.2s;
+            z-index: 2002; /* Above modal content */
+        }
+
+        .modal-nav-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .modal-nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: translateY(-50%);
+        }
+
+        .modal-nav-left {
+            left: 20px;
+        }
+
+        .modal-nav-right {
+            right: 20px;
+        }
+
     </style>
 </head>
 <body>
@@ -811,7 +867,12 @@
         <div class="generation-card">
             <form id="generateForm">
                 <div class="form-group">
-                    <label for="prompt" class="form-label">Describe your image</label>
+                    <div class="form-label-container">
+                        <label for="prompt" class="form-label">Describe your image</label>
+                        <button type="button" id="clearPromptBtn" class="clear-prompt-btn" title="Clear prompt">
+                            <i class="fas fa-eraser"></i>
+                        </button>
+                    </div>
                     <div style="position: relative;">
                         <input 
                             type="text" 
@@ -938,6 +999,8 @@
     <div id="imageModal" class="modal">
         <span class="modal-close" onclick="closeModal()">&times;</span>
         <img class="modal-content" id="modalImage">
+        <button id="prevImageBtn" class="modal-nav-btn modal-nav-left" onclick="showPreviousImage()">&#10094;</button>
+        <button id="nextImageBtn" class="modal-nav-btn modal-nav-right" onclick="showNextImage()">&#10095;</button>
     </div>
 
     <script>
@@ -945,6 +1008,8 @@
         let isGenerating = false;
         let generationStartTime = null;
         let currentLoadingCards = []; // New array to store references to loading card elements
+        let allGeneratedImageUrls = []; // To store ALL generated image URLs for modal navigation
+        let currentModalImageIndex = 0; // To track the index of the image currently shown in modal
 
         // DOM elements
         const generateForm = document.getElementById('generateForm');
@@ -959,6 +1024,10 @@
         const modalImage = document.getElementById('modalImage');
         const themeToggleBtn = document.getElementById('themeToggle');
         const body = document.body;
+        const prevImageBtn = document.getElementById('prevImageBtn');
+        const nextImageBtn = document.getElementById('nextImageBtn');
+        const clearPromptBtn = document.getElementById('clearPromptBtn'); // Added clear button
+
 
         // Aspect ratio dimensions mapping (Increased for maximum pixels)
         const aspectRatioDimensions = {
@@ -996,6 +1065,11 @@
             }
         });
 
+        // Clear Prompt Button Logic
+        clearPromptBtn.addEventListener('click', () => {
+            promptInput.value = '';
+            promptInput.focus(); // Keep focus on the input after clearing
+        });
 
         // Form submission handler
         generateForm.addEventListener('submit', async (e) => {
@@ -1020,37 +1094,44 @@
             // Update UI
             updateGenerateButton(true);
             showImagesSection();
-            showLoadingCards(4); // Pass number of loading cards to create
-            updateGenerationStats();
+
+            const numImagesToGenerate = 4;
+            // Show loading cards, prepending them to the grid
+            showLoadingCards(numImagesToGenerate); 
 
             try {
                 const prompt = promptInput.value.trim();
                 const aspectRatio = aspectRatioSelect.value;
                 const imageStyle = imageStyleSelect.value;
                 
-                // Generate 4 unique images
-                const imagePromises = [];
-                for (let i = 0; i < 4; i++) {
+                const imageGenerationPromises = [];
+                for (let i = 0; i < numImagesToGenerate; i++) {
                     const enhancedPrompt = createEnhancedPrompt(prompt, imageStyle);
                     const seed = Math.floor(Math.random() * 1000000) + i;
                     const dimensions = aspectRatioDimensions[aspectRatio];
                     
                     const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(enhancedPrompt)}?width=${dimensions.width}&height=${dimensions.height}&seed=${seed}&enhance=true&nologo=true`;
-                    imagePromises.push(imageUrl);
+                    imageGenerationPromises.push(imageUrl);
                 }
 
-                // Create image cards, replacing loading cards
-                await createImageCards(imagePromises, prompt); // Use await here
+                // Await all image URLs (strings) for the current generation
+                const generatedUrls = await Promise.all(imageGenerationPromises);
+
+                // Add the new URLs to the *beginning* of the global array
+                // This keeps `allGeneratedImageUrls` in sync with the prepended DOM elements
+                allGeneratedImageUrls.unshift(...generatedUrls);
+
+                // Update the display by replacing loading cards with actual images
+                await updateImageDisplayAfterGeneration(generatedUrls, prompt);
                 
             } catch (error) {
                 console.error('Error generating images:', error);
-                // Using a custom message box instead of alert()
                 showMessageBox('Failed to generate images. Please try again.', 'error');
             } finally {
                 isGenerating = false;
                 updateGenerateButton(false);
                 updateGenerationStats();
-                console.log('Image generation process finished. Button state reset.'); // Debug log
+                console.log('Image generation process finished. Button state reset.');
             }
         }
 
@@ -1096,11 +1177,12 @@
 
         // Show loading cards (prepends new loading cards)
         function showLoadingCards(count) {
-            currentLoadingCards = []; // Clear previous loading card references
+            // Do NOT clear imagesGrid.innerHTML here to keep old images
+            currentLoadingCards = []; // Clear previous loading card references for this new batch
             for (let i = 0; i < count; i++) {
                 const loadingCard = createLoadingCard();
                 imagesGrid.prepend(loadingCard); // Prepend to add new items at the top
-                currentLoadingCards.push(loadingCard);
+                currentLoadingCards.push(loadingCard); // Store reference to the prepended loading card
             }
         }
 
@@ -1119,114 +1201,84 @@
             return card;
         }
 
-        // Create image cards (replaces loading cards)
-        async function createImageCards(imageUrls, prompt) {
-            const imageLoadPromises = imageUrls.map((imageUrl, index) => {
+        // New function to handle replacing loading cards with actual image cards
+        async function updateImageDisplayAfterGeneration(generatedUrls, prompt) {
+            const replacementPromises = generatedUrls.map((imageUrl, i) => {
                 return new Promise((resolve, reject) => {
-                    if (currentLoadingCards[index]) {
-                        const newCard = document.createElement('div');
-                        newCard.className = 'image-card';
-                        newCard.style.animationDelay = `${index * 100}ms`;
-                        
-                        const imageContainer = document.createElement('div');
-                        imageContainer.className = 'image-container';
+                    // The loading cards were prepended in `showLoadingCards`, 
+                    // so `currentLoadingCards[i]` refers to the i-th loading card in the *current batch*.
+                    const loadingCardToReplace = currentLoadingCards[i]; 
 
-                        const loadingDiv = document.createElement('div');
-                        loadingDiv.className = 'image-loading';
-                        loadingDiv.innerHTML = `<i class="fas fa-spinner spin" style="font-size: 1.5rem; color: #8b5cf6;"></i>
-                                                <p style="color: #8b5cf6; font-size: 0.9rem;">Loading...</p>`;
-                        imageContainer.appendChild(loadingDiv);
-
-                        const img = document.createElement('img');
-                        img.className = 'generated-image';
-                        img.src = imageUrl;
-                        img.alt = `Generated image ${index + 1}: ${prompt}`;
-                        img.style.opacity = '0'; // Start hidden
-
-                        // Correctly attach handlers that call the promise's resolve/reject
-                        img.onload = () => {
-                            handleImageLoad(img); // Still call the visual handler
-                            resolve(); // Resolve the promise once image is loaded
-                        };
-                        img.onerror = () => {
-                            handleImageError(img); // Still call the visual handler
-                            reject(`Failed to load image: ${imageUrl}`); // Reject the promise
-                        };
-                        imageContainer.appendChild(img);
-
-                        const fullscreenBtn = document.createElement('button');
-                        fullscreenBtn.className = 'fullscreen-btn';
-                        fullscreenBtn.setAttribute('title', 'View Fullscreen');
-                        fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
-                        fullscreenBtn.onclick = () => openModal(imageUrl);
-                        imageContainer.appendChild(fullscreenBtn);
-
-                        const imageOverlay = document.createElement('div');
-                        imageOverlay.className = 'image-overlay';
-                        imageOverlay.innerHTML = `
-                            <button class="overlay-btn" onclick="downloadImage('${imageUrl}', ${index})" title="Download">
-                                <i class="fas fa-download"></i>
-                            </button>
-                            <button class="overlay-btn" onclick="likeImage(${index})" title="Like">
-                                <i class="fas fa-heart"></i>
-                            </button>
-                            <button class="overlay-btn" onclick="shareImage('${imageUrl}', '${prompt}')" title="Share">
-                                <i class="fas fa-share"></i>
-                            </button>
-                        `;
-                        imageContainer.appendChild(imageOverlay);
-
-                        newCard.appendChild(imageContainer);
-                        
-                        // Replace the loading card with the new image card
-                        imagesGrid.replaceChild(newCard, currentLoadingCards[index]);
-                    } else {
-                        // Fallback for unexpected case, though with prepending, this might not be reached for new images
-                        console.warn("No loading card found to replace. Appending new card directly.");
-                        const newCard = document.createElement('div');
-                        newCard.className = 'image-card';
-                        newCard.style.animationDelay = `${index * 100}ms`;
-
-                        const imageContainer = document.createElement('div');
-                        imageContainer.className = 'image-container';
-
-                        const img = document.createElement('img');
-                        img.className = 'generated-image';
-                        img.src = imageUrl;
-                        img.alt = `Generated image ${index + 1}: ${prompt}`;
-                        img.style.opacity = '0';
-                        img.onload = () => { handleImageLoad(img); resolve(); };
-                        img.onerror = () => { handleImageError(img); reject(`Failed to load image: ${imageUrl}`); };
-                        imageContainer.appendChild(img);
-
-                        const fullscreenBtn = document.createElement('button');
-                        fullscreenBtn.className = 'fullscreen-btn';
-                        fullscreenBtn.setAttribute('title', 'View Fullscreen');
-                        fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
-                        fullscreenBtn.onclick = () => openModal(imageUrl);
-                        imageContainer.appendChild(fullscreenBtn);
-
-                        const imageOverlay = document.createElement('div');
-                        imageOverlay.className = 'image-overlay';
-                        imageOverlay.innerHTML = `
-                            <button class="overlay-btn" onclick="downloadImage('${imageUrl}', ${index})" title="Download">
-                                <i class="fas fa-download"></i>
-                            </button>
-                            <button class="overlay-btn" onclick="likeImage(${index})" title="Like">
-                                <i class="fas fa-heart"></i>
-                            </button>
-                            <button class="overlay-btn" onclick="shareImage('${imageUrl}', '${prompt}')" title="Share">
-                                <i class="fas fa-share"></i>
-                            </button>
-                        `;
-                        imageContainer.appendChild(imageOverlay);
-                        newCard.appendChild(imageContainer);
-                        imagesGrid.appendChild(newCard);
+                    if (!loadingCardToReplace) {
+                        console.error(`Error: No loading card found at index ${i} for replacement.`);
+                        reject(`Missing loading card for image ${i}`);
+                        return;
                     }
+
+                    const newCard = document.createElement('div');
+                    newCard.className = 'image-card';
+                    newCard.style.animationDelay = `${i * 100}ms`; // Apply animation delay for new batch
+
+                    // When this newCard is added to the DOM, its index in imagesGrid.children
+                    // will correspond to its index in allGeneratedImageUrls because we unshifted.
+                    newCard.addEventListener('click', () => {
+                        // Find the global index of this newCard after it's in the DOM
+                        const globalIndex = Array.from(imagesGrid.children).indexOf(newCard);
+                        if (globalIndex !== -1) {
+                            openModal(globalIndex);
+                        } else {
+                            console.error("Could not find newCard in imagesGrid.children for modal opening.");
+                        }
+                    });
+                    
+                    const imageContainer = document.createElement('div');
+                    imageContainer.className = 'image-container';
+
+                    const img = document.createElement('img');
+                    img.className = 'generated-image';
+                    img.src = imageUrl;
+                    img.alt = `Generated image ${i + 1}: ${prompt}`;
+                    img.style.opacity = '0'; // Start hidden
+
+                    img.onload = () => {
+                        handleImageLoad(img);
+                        resolve();
+                    };
+                    img.onerror = () => {
+                        handleImageError(img);
+                        reject(`Failed to load image: ${imageUrl}`);
+                    };
+                    imageContainer.appendChild(img);
+
+                    // Download button (top-right)
+                    const downloadBtn = document.createElement('button');
+                    downloadBtn.className = 'download-btn';
+                    downloadBtn.setAttribute('title', 'Download Image');
+                    downloadBtn.innerHTML = '<i class="fas fa-download"></i>';
+                    downloadBtn.onclick = (e) => {
+                        e.stopPropagation(); // Prevent card click from firing fullscreen
+                        downloadImage(imageUrl, i); // Use the URL and local index for filename
+                    };
+                    imageContainer.appendChild(downloadBtn);
+
+                    // Like button (bottom-right)
+                    const likeBtn = document.createElement('button');
+                    likeBtn.className = 'like-btn';
+                    likeBtn.setAttribute('title', 'Like Image');
+                    likeBtn.innerHTML = '<i class="fas fa-heart"></i>';
+                    likeBtn.onclick = (e) => {
+                        e.stopPropagation(); // Prevent card click from firing fullscreen
+                        likeImage(i); // Use the local index for potential future tracking
+                    };
+                    imageContainer.appendChild(likeBtn);
+
+                    newCard.appendChild(imageContainer);
+                    
+                    imagesGrid.replaceChild(newCard, loadingCardToReplace);
                 });
             });
-            await Promise.allSettled(imageLoadPromises);
-            currentLoadingCards = []; // Clear references after all replacements
+            await Promise.allSettled(replacementPromises);
+            currentLoadingCards = []; // Clear references after replacements
         }
 
 
@@ -1294,41 +1346,50 @@
         // Like image
         function likeImage(index) {
             // Add visual feedback
-            const button = event.target.closest('.overlay-btn');
-            button.style.color = '#ef4444';
-            button.innerHTML = '<i class="fas fa-heart"></i>';
+            const button = event.target.closest('.like-btn'); // Changed to like-btn
+            if (button.style.color === 'rgb(239, 68, 68)') { // If already liked (red)
+                button.style.color = ''; // Reset to default (black/dark mode white)
+                button.innerHTML = '<i class="fas fa-heart"></i>'; // Solid heart
+            } else {
+                button.style.color = '#ef4444'; // Red for liked
+                button.innerHTML = '<i class="fas fa-heart"></i>'; // Solid heart
+            }
             
             // You can add actual like functionality here
-            console.log(`Liked image ${index + 1}`);
+            console.log(`Liked/Unliked image at global index ${index}`);
         }
 
-        // Share image
-        async function shareImage(imageUrl, prompt) {
-            if (navigator.share) {
-                try {
-                    await navigator.share({
-                        title: 'Check out this AI-generated image!',
-                        text: `Generated with ImageInIt: "${prompt}"`,
-                        url: imageUrl
-                    });
-                } catch (error) {
-                    console.error('Share failed:', error);
-                }
-            } else {
-                // Fallback: copy to clipboard
-                try {
-                    // Use document.execCommand for better compatibility in iframes
-                    const textArea = document.createElement("textarea");
-                    textArea.value = imageUrl;
-                    document.body.appendChild(textArea);
-                    textArea.select();
-                    document.execCommand('copy');
-                    textArea.remove();
-                    showMessageBox('Image URL copied to clipboard!', 'info');
-                } catch (error) {
-                    console.error('Copy failed:', error);
-                    showMessageBox('Sharing not supported on this device or copy failed.', 'error');
-                }
+        // Fullscreen Modal functions
+        function openModal(globalIndex) {
+            currentModalImageIndex = globalIndex;
+            modalImage.src = allGeneratedImageUrls[currentModalImageIndex];
+            imageModal.style.display = "flex"; // Use flex to center content
+            updateModalNavigation();
+        }
+
+        function closeModal() {
+            imageModal.style.display = "none";
+            modalImage.src = ""; // Clear image source
+        }
+
+        function updateModalNavigation() {
+            prevImageBtn.disabled = (currentModalImageIndex === 0);
+            nextImageBtn.disabled = (currentModalImageIndex === allGeneratedImageUrls.length - 1);
+        }
+
+        function showNextImage() {
+            if (currentModalImageIndex < allGeneratedImageUrls.length - 1) {
+                currentModalImageIndex++;
+                modalImage.src = allGeneratedImageUrls[currentModalImageIndex];
+                updateModalNavigation();
+            }
+        }
+
+        function showPreviousImage() {
+            if (currentModalImageIndex > 0) {
+                currentModalImageIndex--;
+                modalImage.src = allGeneratedImageUrls[currentModalImageIndex];
+                updateModalNavigation();
             }
         }
 
@@ -1370,6 +1431,9 @@
         // Show error message
         function showError(message) {
             currentLoadingCards.forEach(card => card.remove()); // Remove any pending loading cards
+            // Only clear grid if it's an error on initial load or if we want to replace all images with error.
+            // For persistence, we should probably just add an error card.
+            // For now, retaining the previous behavior if an error occurs.
             imagesGrid.innerHTML = `
                 <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #ef4444;">
                     <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
@@ -1429,7 +1493,7 @@
             enhanceBtn.innerHTML = '<i class="fas fa-spinner spin"></i>'; // Only icon
             
             try {
-                // Ensure API key is handled correctly (empty string as per instructions)
+                // Use the provided API key
                 const apiKey = "AIzaSyCT_hRShR7x-luU4bMCNCTj9vunETcOqGk"; 
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
@@ -1551,17 +1615,6 @@ Enhanced prompt:`
                     msgBox.style.display = 'none';
                 }, 300); // Wait for transition to finish
             }, 3000);
-        }
-
-        // Fullscreen Modal functions
-        function openModal(imageUrl) {
-            imageModal.style.display = "flex"; // Use flex to center content
-            modalImage.src = imageUrl;
-        }
-
-        function closeModal() {
-            imageModal.style.display = "none";
-            modalImage.src = ""; // Clear image source
         }
     </script>
 </body>
