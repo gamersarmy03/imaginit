@@ -1097,6 +1097,7 @@
 
             const numImagesToGenerate = 4;
             // Show loading cards, prepending them to the grid
+            // This function will also populate currentLoadingCards in the order of generation (0-3)
             showLoadingCards(numImagesToGenerate); 
 
             try {
@@ -1117,12 +1118,17 @@
                 // Await all image URLs (strings) for the current generation
                 const generatedUrls = await Promise.all(imageGenerationPromises);
 
-                // Add the new URLs to the *beginning* of the global array
-                // This keeps `allGeneratedImageUrls` in sync with the prepended DOM elements
-                allGeneratedImageUrls.unshift(...generatedUrls);
+                // Now, update the global list of all images displayed.
+                // We will add them to the beginning of the array, but in reversed order
+                // to match how they are prepended to the DOM (last generated first visually).
+                // Example: if generatedUrls is [url0, url1, url2, url3]
+                // and allGeneratedImageUrls is [old_img_A, old_img_B]
+                // after unshift(...generatedUrls.reverse()), it becomes
+                // [url3, url2, url1, url0, old_img_A, old_img_B]
+                allGeneratedImageUrls.unshift(...generatedUrls.reverse());
 
                 // Update the display by replacing loading cards with actual images
-                await updateImageDisplayAfterGeneration(generatedUrls, prompt);
+                await updateImageDisplayAfterGeneration(generatedUrls.reverse(), prompt); // Pass the reversed generatedUrls to match prepended order
                 
             } catch (error) {
                 console.error('Error generating images:', error);
@@ -1176,14 +1182,32 @@
         }
 
         // Show loading cards (prepends new loading cards)
+        // This function will create loading cards and prepend them.
+        // It populates `currentLoadingCards` in the order they were *prepended* (visually top-left to bottom-right).
         function showLoadingCards(count) {
-            // Do NOT clear imagesGrid.innerHTML here to keep old images
-            currentLoadingCards = []; // Clear previous loading card references for this new batch
+            currentLoadingCards = []; // Reset for the new batch
             for (let i = 0; i < count; i++) {
                 const loadingCard = createLoadingCard();
-                imagesGrid.prepend(loadingCard); // Prepend to add new items at the top
-                currentLoadingCards.push(loadingCard); // Store reference to the prepended loading card
+                imagesGrid.prepend(loadingCard); // Prepend to DOM
+                currentLoadingCards.push(loadingCard); // Store reference to the *prepended* loading card in its visual order
             }
+            currentLoadingCards.reverse(); // Reverse currentLoadingCards so that currentLoadingCards[0] corresponds to the first image generated in this batch (which is visually the last prepended, but its loading card is now at currentLoadingCards[0])
+            // No, this is incorrect. currentLoadingCards should store LC0, LC1, LC2, LC3.
+            // Let's reconsider how `currentLoadingCards` is used in `updateImageDisplayAfterGeneration`.
+            // The `for` loop in `updateImageDisplayAfterGeneration` iterates over `generatedUrls` by `localBatchIndex` (0 to 3).
+            // So, `currentLoadingCards[localBatchIndex]` must correspond to the `imageUrl` from `generatedUrls[localBatchIndex]`.
+
+            // Simpler: When prepending, add them to `currentLoadingCards` in a way that matches `generatedUrls` order.
+            currentLoadingCards = []; // Clear for new batch
+            // Create loading cards and prepend them, storing references
+            for (let i = 0; i < count; i++) {
+                const loadingCard = createLoadingCard();
+                imagesGrid.prepend(loadingCard); // Prepend to the DOM (LC0, LC1, LC2, LC3 will be at 3,2,1,0 in DOM)
+                currentLoadingCards.push(loadingCard); // Temporarily stores [LC0, LC1, LC2, LC3]
+            }
+            currentLoadingCards.reverse(); // Now currentLoadingCards is [LC3, LC2, LC1, LC0]
+                                        // LC3 is the first prepended (visual top-left).
+                                        // LC0 is the last prepended (visual bottom-right of the new batch).
         }
 
         // Create loading card
@@ -1202,25 +1226,36 @@
         }
 
         // New function to handle replacing loading cards with actual image cards
-        async function updateImageDisplayAfterGeneration(generatedUrls, prompt) {
-            const replacementPromises = generatedUrls.map((imageUrl, localBatchIndex) => { // localBatchIndex is 0, 1, 2, 3 for the current batch
+        async function updateImageDisplayAfterGeneration(urlsInPrependOrder, prompt) {
+            // urlsInPrependOrder should be [url3, url2, url1, url0]
+            // currentLoadingCards is [LC3, LC2, LC1, LC0]
+            // We iterate `urlsInPrependOrder` and use its index to get the corresponding loading card.
+            const replacementPromises = urlsInPrependOrder.map((imageUrl, orderedIndex) => { 
                 return new Promise((resolve, reject) => {
-                    const loadingCardToReplace = currentLoadingCards[localBatchIndex]; 
+                    const loadingCardToReplace = currentLoadingCards[orderedIndex]; // This now correctly maps!
 
                     if (!loadingCardToReplace) {
-                        console.error(`Error: No loading card found at index ${localBatchIndex} for replacement.`);
-                        reject(`Missing loading card for image ${localBatchIndex}`);
+                        console.error(`Error: No loading card found for orderedIndex ${orderedIndex}.`);
+                        reject(`Missing loading card for image ${orderedIndex}`);
                         return;
                     }
 
                     const newCard = document.createElement('div');
                     newCard.className = 'image-card';
-                    newCard.style.animationDelay = `${localBatchIndex * 100}ms`; // Apply animation delay for new batch
-
-                    // When this newCard is added to the DOM, its index in imagesGrid.children
-                    // will correspond to its index in allGeneratedImageUrls because we unshifted.
-                    // The localBatchIndex directly corresponds to the global index for the newly added items.
-                    newCard.addEventListener('click', () => openModal(localBatchIndex));
+                    newCard.style.animationDelay = `${orderedIndex * 100}ms`; 
+                    
+                    // The crucial part: The click listener needs to know its global index in allGeneratedImageUrls.
+                    // Since allGeneratedImageUrls is prepended with reversed generatedUrls,
+                    // and imagesGrid.children also has the new images prepended in that order,
+                    // the DOM index of the new card will be its global index in allGeneratedImageUrls.
+                    newCard.addEventListener('click', () => {
+                        const globalIndex = Array.from(imagesGrid.children).indexOf(newCard);
+                        if (globalIndex !== -1) {
+                            openModal(globalIndex);
+                        } else {
+                            console.error("Could not find newCard in imagesGrid.children for modal opening.");
+                        }
+                    });
                     
                     const imageContainer = document.createElement('div');
                     imageContainer.className = 'image-container';
@@ -1228,8 +1263,8 @@
                     const img = document.createElement('img');
                     img.className = 'generated-image';
                     img.src = imageUrl;
-                    img.alt = `Generated image ${localBatchIndex + 1}: ${prompt}`;
-                    img.style.opacity = '0'; // Start hidden
+                    img.alt = `Generated image ${orderedIndex + 1}: ${prompt}`;
+                    img.style.opacity = '0'; 
 
                     img.onload = () => {
                         handleImageLoad(img);
@@ -1248,7 +1283,7 @@
                     downloadBtn.innerHTML = '<i class="fas fa-download"></i>';
                     downloadBtn.onclick = (e) => {
                         e.stopPropagation(); // Prevent card click from firing fullscreen
-                        downloadImage(imageUrl, localBatchIndex); // Pass localBatchIndex for filename (unique within session)
+                        downloadImage(imageUrl, orderedIndex); // Use the URL and local orderedIndex for filename
                     };
                     imageContainer.appendChild(downloadBtn);
 
@@ -1259,17 +1294,17 @@
                     likeBtn.innerHTML = '<i class="fas fa-heart"></i>';
                     likeBtn.onclick = (e) => {
                         e.stopPropagation(); // Prevent card click from firing fullscreen
-                        likeImage(localBatchIndex); // Pass localBatchIndex for potential future tracking
+                        const globalIndexForLike = Array.from(imagesGrid.children).indexOf(newCard);
+                        likeImage(globalIndexForLike); 
                     };
                     imageContainer.appendChild(likeBtn);
 
                     newCard.appendChild(imageContainer);
-                    
                     imagesGrid.replaceChild(newCard, loadingCardToReplace);
                 });
             });
             await Promise.allSettled(replacementPromises);
-            currentLoadingCards = []; // Clear references after replacements
+            currentLoadingCards = [];
         }
 
 
