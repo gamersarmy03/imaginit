@@ -1,6 +1,6 @@
 const CACHE_NAME = 'imageinit-cache-v1';
 const urlsToCache = [
-  '/work.html',
+  '/home.html',
   '/styles.css', // Assuming you'll extract your CSS into a separate file
   '/script.js',  // Assuming you'll extract your JS into a separate file
   '/images/icon.png', // Only one icon listed here
