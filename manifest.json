@@ -2,7 +2,7 @@
   "name": "ImageInIt - AI Image Generator",
   "short_name": "ImageInIt",
   "description": "Transform words into visual magic with ImageInIt, your AI image generator.",
-  "start_url": "/work.html",
+  "start_url": "/home.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#8b5cf6",
