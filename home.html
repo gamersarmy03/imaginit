@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ImageInIt - AI Image Generator</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ffffff 0%, #f3e8ff 50%, #dbeafe 100%);
+            min-height: 100vh;
+            line-height: 1.6;
+            transition: background 0.5s ease; /* Smooth transition for theme change */
+        }
+
+        /* Dark Mode styles */
+        body.dark-mode {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 50%, #3e3e3e 100%);
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .header {
+            background: rgba(0, 0, 0, 0.8);
+            border-bottom-color: #333;
+        }
+
+        body.dark-mode .logo-text,
+        body.dark-mode .hero-title,
+        body.dark-mode .images-title,
+        body.dark-mode .features-title {
+            background: linear-gradient(135deg, #a78bfa, #60a5fa, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        body.dark-mode .nav-links a,
+        body.dark-mode .hero-subtitle,
+        body.dark-mode .stat-badge,
+        body.dark-mode .feature-description,
+        body.dark-mode .footer p,
+        body.dark-mode .footer-links a {
+            color: #b0b0b0;
+        }
+
+        body.dark-mode .btn-outline {
+            border-color: #444;
+            color: #a78bfa;
+        }
+
+        body.dark-mode .btn-outline:hover {
+            background: #333;
+        }
+
+        body.dark-mode .generation-card,
+        body.dark-mode .image-card,
+        body.dark-mode .feature-card,
+        body.dark-mode .footer {
+            background: rgba(0, 0, 0, 0.7);
+            border-color: #333;
+            box-shadow: 0 4px 6px rgba(255, 255, 255, 0.1);
+        }
+
+        body.dark-mode .form-label,
+        body.dark-mode .form-input,
+        body.dark-mode .form-select {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .form-input,
+        body.dark-mode .form-select {
+            background: #333;
+            border-color: #555;
+        }
+
+        body.dark-mode .form-input:focus {
+            border-color: #a78bfa;
+            box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.2);
+        }
+
+        body.dark-mode .enhance-btn {
+            background: linear-gradient(135deg, #a78bfa, #60a5fa);
+        }
+
+        body.dark-mode .enhance-btn:hover {
+            box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);
+        }
+
+        body.dark-mode .image-loading {
+            background: linear-gradient(135deg, #2c2c2c, #3e3e3e);
+            color: #a78bfa;
+        }
+
+        body.dark-mode .overlay-btn {
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 2px 4px rgba(255, 255, 255, 0.05);
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .overlay-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        body.dark-mode .fullscreen-btn {
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 2px 4px rgba(255, 255, 255, 0.05);
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .fullscreen-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        body.dark-mode .feature-card {
+            background: rgba(0, 0, 0, 0.7);
+            border-color: #333;
+        }
+
+        body.dark-mode .feature-icon {
+            background: linear-gradient(135deg, #a78bfa, #60a5fa);
+        }
+
+        /* Add dark mode style for features-section */
+        body.dark-mode .features-section {
+            background: linear-gradient(135deg, #2a2a2a, #1f1f1f); /* Darker gradient for dark mode */
+        }
+
+
+        /* Header Styles */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.8);
+            border-bottom: 1px solid #e5e7eb;
+            padding: 1rem 0;
+            display: flex; /* Make it a flex container */
+            justify-content: space-between; /* Space out items */
+            align-items: center; /* Vertically align items */
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%; /* Occupy full width within header */
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #6b7280;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #8b5cf6;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-outline {
+            border: 1px solid #e5e7eb;
+            background: transparent;
+            color: #8b5cf6;
+        }
+
+        .btn-outline:hover {
+            background: #f3e8ff;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            color: white;
+            font-size: 1.1rem;
+            padding: 1rem 2rem;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 5rem 1rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, #f3e8ff, #dbeafe);
+            color: #8b5cf6;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .hero-title {
+            font-size: clamp(3rem, 8vw, 5rem);
+            font-weight: bold;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+            animation: fadeInUp 0.6s ease-out 0.2s both;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: #6b7280;
+            margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            animation: fadeInUp 0.6s ease-out 0.4s both;
+        }
+
+        /* Generation Interface */
+        .generation-section {
+            padding: 3rem 1rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .generation-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            animation: fadeInUp 0.6s ease-out 0.6s both;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0; /* Removed margin-bottom here */
+        }
+
+        .clear-prompt-btn {
+            background: none;
+            border: none;
+            font-size: 1rem;
+            color: #6b7280;
+            cursor: pointer;
+            transition: color 0.3s;
+            padding: 0.25rem;
+        }
+
+        .clear-prompt-btn:hover {
+            color: #ef4444; /* Red color on hover for clear */
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem;
+            padding-right: 60px; /* Adjusted padding-right for compact enhance button */
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background: white;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Images Section */
+        .images-section {
+            padding: 3rem 1rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .images-title {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .generation-stats {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid #e5e7eb;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .image-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+            animation: fadeInUp 0.6s ease-out both;
+            position: relative; /* Needed for absolute positioning of buttons */
+            cursor: pointer; /* Indicate clickability */
+        }
+
+        .image-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .image-container {
+            position: relative;
+            aspect-ratio: 1;
+            overflow: hidden;
+        }
+
+        .generated-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* Initial blur and opacity for loading animation */
+            filter: blur(10px); 
+            opacity: 0;
+            transition: filter 1s ease-out, opacity 1s ease-out; /* Smooth transition for blur and opacity */
+        }
+
+        .image-loading {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, #f3e8ff, #dbeafe);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        /* Download button now at top-right */
+        .download-btn {
+            position: absolute;
+            top: 0.75rem; /* Adjust as needed */
+            right: 0.75rem; /* Adjust as needed */
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 10; /* Ensure it's above other elements */
+            opacity: 0; /* Hidden by default */
+        }
+
+        .image-card:hover .download-btn {
+            opacity: 1; /* Show on hover */
+        }
+
+        .download-btn:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+
+        /* Like button now at bottom-right */
+        .like-btn {
+            position: absolute;
+            bottom: 0.75rem; /* Adjust as needed */
+            right: 0.75rem; /* Adjust as needed */
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 10; /* Ensure it's above other elements */
+            opacity: 0; /* Hidden by default */
+        }
+
+        .image-card:hover .like-btn {
+            opacity: 1; /* Show on hover */
+        }
+
+        .like-btn:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+
+
+        /* Features Section */
+        .features-section {
+            padding: 5rem 1rem;
+            background: linear-gradient(135deg, #f3e8ff, #dbeafe);
+        }
+
+        .features-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .features-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 3rem;
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 16px;
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .feature-description {
+            color: #6b7280;
+        }
+
+        /* Footer */
+        .footer {
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            padding: 3rem 1rem;
+            text-align: center;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: #8b5cf6;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .spin {
+            animation: spin 1s linear infinite;
+        }
+
+        .pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: .5;
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero {
+                padding: 3rem 1rem;
+            }
+
+            .generation-card {
+                padding: 1.5rem;
+            }
+
+            .images-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            /* Hide modal navigation buttons on mobile */
+            .modal-nav-btn {
+                display: none;
+            }
+        }
+
+        /* Hidden class */
+        .hidden {
+            display: none;
+        }
+
+        /* Loading shimmer effect */
+        .shimmer {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -200% 0;
+            }
+            100% {
+                background-position: 200% 0;
+            }
+        }
+
+        .enhance-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 0.5rem; /* Made more compact */
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center; /* Center the icon */
+            width: 40px; /* Fixed width for better compactness */
+            height: 40px; /* Fixed height for better compactness */
+        }
+
+        .enhance-btn:hover {
+            transform: translateY(-50%) scale(1.05);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        .enhance-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: translateY(-50%);
+        }
+
+        .form-input {
+            padding-right: 60px; /* Increased padding-right for text visibility */
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 2000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: hidden; /* Prevent scrolling within modal */
+            background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            margin: auto;
+            display: block;
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain; /* Ensure the image fits within the modal */
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+
+        .modal-close:hover,
+        .modal-close:focus {
+            color: #bbb;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .theme-toggle-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+            transition: color 0.3s, transform 0.2s ease-in-out;
+            padding: 0.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-toggle-btn:hover {
+            color: #8b5cf6;
+            transform: scale(1.1);
+        }
+        
+        body.dark-mode .theme-toggle-btn {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .theme-toggle-btn:hover {
+            color: #a78bfa;
+        }
+
+        /* Modal Navigation Buttons */
+        .modal-nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s, transform 0.2s;
+            z-index: 2002; /* Above modal content */
+        }
+
+        .modal-nav-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .modal-nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: translateY(-50%);
+        }
+
+        .modal-nav-left {
+            left: 20px;
+        }
+
+        .modal-nav-right {
+            right: 20px;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-image"></i>
+                </div>
+                <span class="logo-text">ImageInIt</span>
+            </div>
+            <nav class="nav-links">
+                <!-- Remove all navigation links -->
+            </nav>
+            <button id="themeToggle" class="theme-toggle-btn" title="Toggle theme">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <!-- Removed "Powered by Pollination AI" badge -->
+        <h1 class="hero-title">
+            Transform Words<br>
+            Into Visual Magic
+        </h1>
+        <p class="hero-subtitle">
+            Create stunning AI-generated images from your imagination. Generate 4 unique variations instantly with our advanced AI technology.
+        </p>
+    </section>
+
+    <!-- Generation Interface -->
+    <section class="generation-section">
+        <div class="generation-card">
+            <form id="generateForm">
+                <div class="form-group">
+                    <div class="form-label-container">
+                        <label for="prompt" class="form-label">Describe your image</label>
+                        <button type="button" id="clearPromptBtn" class="clear-prompt-btn" title="Clear prompt">
+                            <i class="fas fa-eraser"></i>
+                        </button>
+                    </div>
+                    <div style="position: relative;">
+                        <input 
+                            type="text" 
+                            id="prompt" 
+                            class="form-input" 
+                            placeholder="A majestic dragon flying over a mystical forest at sunset..."
+                            required
+                        >
+                        <button 
+                            type="button" 
+                            id="enhanceBtn" 
+                            class="enhance-btn"
+                            onclick="enhancePrompt()"
+                            title="Enhance your prompt with AI"
+                        >
+                            <i class="fas fa-magic"></i>
+                            <!-- Removed "Enhance" text -->
+                        </button>
+                    </div>
+                </div>
+
+                <div class="controls-grid">
+                    <div class="form-group">
+                        <label for="aspectRatio" class="form-label">Aspect Ratio</label>
+                        <select id="aspectRatio" class="form-select">
+                            <option value="1:1">Square (1:1)</option>
+                            <option value="4:5">Portrait (4:5)</option>
+                            <option value="9:16">Story (9:16)</option>
+                            <option value="16:9">Landscape (16:9)</option>
+                            <option value="9:21">Panorama (9:21)</option> <!-- Added 9:21 option -->
+                            <option value="21:9">Ultra Wide (21:9)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="imageStyle" class="form-label">Image Style</label>
+                        <select id="imageStyle" class="form-select">
+                            <option value="auto">Auto</option>
+                            <option value="realistic">Realistic</option>
+                            <option value="digital-art">Digital Art</option>
+                            <option value="painting">Painting</option>
+                            <option value="anime">Anime</option>
+                            <option value="3d-render">3D Render</option>
+                            <option value="minimalist">Minimalist</option>
+                            <option value="black-white">Black & White</option>
+                            <option value="sketch">Sketch</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" id="generateBtn" class="btn btn-primary" style="width: 100%;">
+                    <i class="fas fa-bolt"></i>
+                    Generate 4 Images
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Generated Images Section -->
+    <section id="imagesSection" class="images-section hidden">
+        <h2 class="images-title">Generated Images</h2>
+        
+        <div id="generationStats" class="generation-stats"></div>
+
+        <div id="imagesGrid" class="images-grid">
+            <!-- Images will be dynamically inserted here -->
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section">
+        <div class="features-container">
+            <h2 class="features-title">Why Choose ImageInIt?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3 class="feature-title">Lightning Fast</h3>
+                    <p class="feature-description">
+                        Generate 4 unique images in seconds with our optimized AI pipeline.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-palette"></i>
+                    </div>
+                    <h3 class="feature-title">Multiple Styles</h3>
+                    <p class="feature-description">
+                        Choose from 9 different artistic styles to match your vision.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-image"></i>
+                    </div>
+                    <h3 class="feature-title">Perfect Ratios</h3>
+                    <p class="feature-description">
+                        Generate images in 5 different aspect ratios for any use case.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-logo">
+            <div class="logo-icon">
+                <i class="fas fa-image"></i>
+            </div>
+            <span class="logo-text">ImageInIt</span>
+        </div>
+        <p style="color: #6b7280; margin-bottom: 1rem;">Transform your imagination into stunning visuals</p>
+        <div class="footer-links">
+            <a href="#privacy">Privacy Policy</a>
+            <a href="#terms">Terms of Service</a>
+            <a href="#contact">Contact</a>
+        </div>
+    </footer>
+
+    <!-- The Modal -->
+    <div id="imageModal" class="modal">
+        <span class="modal-close" onclick="closeModal()">&times;</span>
+        <img class="modal-content" id="modalImage">
+        <button id="prevImageBtn" class="modal-nav-btn modal-nav-left" onclick="showPreviousImage()">&#10094;</button>
+        <button id="nextImageBtn" class="modal-nav-btn modal-nav-right" onclick="showNextImage()">&#10095;</button>
+    </div>
+
+    <script>
+        // Global variables
+        let isGenerating = false;
+        let generationStartTime = null;
+        let allGeneratedImageUrls = []; // To store ALL generated image URLs for modal navigation
+        let currentModalImageIndex = 0; // To track the index of the image currently shown in modal
+        let startX = 0; // For swipe functionality
+
+        // DOM elements
+        const generateForm = document.getElementById('generateForm');
+        const generateBtn = document.getElementById('generateBtn');
+        const promptInput = document.getElementById('prompt');
+        const aspectRatioSelect = document.getElementById('aspectRatio');
+        const imageStyleSelect = document.getElementById('imageStyle');
+        const imagesSection = document.getElementById('imagesSection');
+        const imagesGrid = document.getElementById('imagesGrid');
+        const generationStats = document.getElementById('generationStats');
+        const imageModal = document.getElementById('imageModal');
+        const modalImage = document.getElementById('modalImage');
+        const themeToggleBtn = document.getElementById('themeToggle');
+        const body = document.body;
+        const prevImageBtn = document.getElementById('prevImageBtn');
+        const nextImageBtn = document.getElementById('nextImageBtn');
+        const clearPromptBtn = document.getElementById('clearPromptBtn'); // Added clear button
+
+
+        // Aspect ratio dimensions mapping (Increased for maximum pixels)
+        const aspectRatioDimensions = {
+            '1:1': { width: 2048, height: 2048 },
+            '4:5': { width: 1638, height: 2048 }, // 1024/1280 * 2048 = 1638.4
+            '9:16': { width: 1152, height: 2048 }, // 720/1280 * 2048 = 1152
+            '16:9': { width: 2048, height: 1152 }, // 1280/720 * 1152 = 2048
+            '9:21': { width: 877, height: 2048 }, // Approx. 9:21 (2048 * (9/21))
+            '21:9': { width: 2560, height: 1097 }  // 1344/576 * 1097.14 = 2560 (approx, original aspect maintained)
+        };
+
+        // Theme Toggle Logic
+        // Check for saved theme preference or default to light
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            body.classList.add('dark-mode');
+            themeToggleBtn.querySelector('i').classList.remove('fa-moon');
+            themeToggleBtn.querySelector('i').classList.add('fa-sun');
+        } else {
+            body.classList.remove('dark-mode');
+            themeToggleBtn.querySelector('i').classList.remove('fa-sun');
+            themeToggleBtn.querySelector('i').classList.add('fa-moon');
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            const isDarkMode = body.classList.contains('dark-mode');
+            if (isDarkMode) {
+                localStorage.setItem('theme', 'dark');
+                themeToggleBtn.querySelector('i').classList.remove('fa-moon');
+                themeToggleBtn.querySelector('i').classList.add('fa-sun');
+            } else {
+                localStorage.setItem('theme', 'light');
+                themeToggleBtn.querySelector('i').classList.remove('fa-sun');
+                themeToggleBtn.querySelector('i').classList.add('fa-moon');
+            }
+        });
+
+        // Clear Prompt Button Logic
+        clearPromptBtn.addEventListener('click', () => {
+            promptInput.value = '';
+            promptInput.focus(); // Keep focus on the input after clearing
+        });
+
+        // Form submission handler
+        generateForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (isGenerating) return;
+            
+            const prompt = promptInput.value.trim();
+            if (!prompt) {
+                 showMessageBox('Please enter a prompt first', 'warning');
+                 return;
+            }
+
+            await generateImages();
+        });
+
+        // Generate images function
+        async function generateImages() {
+            isGenerating = true;
+            generationStartTime = Date.now();
+            
+            // Update UI
+            updateGenerateButton(true);
+            showImagesSection();
+
+            const numImagesToGenerate = 4;
+            const currentPrompt = promptInput.value.trim();
+            const aspectRatio = aspectRatioSelect.value;
+            const imageStyle = imageStyleSelect.value;
+
+            const newGeneratedUrls = []; // Store URLs for the current batch
+            for (let i = 0; i < numImagesToGenerate; i++) {
+                const enhancedPrompt = createEnhancedPrompt(currentPrompt, imageStyle);
+                const seed = Math.floor(Math.random() * 1000000) + i;
+                const dimensions = aspectRatioDimensions[aspectRatio];
+                const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(enhancedPrompt)}?width=${dimensions.width}&height=${dimensions.height}&seed=${seed}&enhance=true&nologo=true`;
+                newGeneratedUrls.push(imageUrl);
+            }
+
+            // Insert the new URLs at the beginning of the global array
+            // This ensures new images are at index 0, 1, 2, 3 in allGeneratedImageUrls
+            allGeneratedImageUrls.splice(0, 0, ...newGeneratedUrls);
+
+            // Create and prepend loading cards for the new batch
+            const loadingCardsForCurrentBatch = [];
+            // Iterate backwards to prepend elements so they appear in the correct visual order (LC0, LC1, LC2, LC3)
+            for (let i = numImagesToGenerate - 1; i >= 0; i--) {
+                const loadingCard = createLoadingCard();
+                imagesGrid.prepend(loadingCard);
+                // Store references to the loading cards in their original generated order (LC0, LC1, LC2, LC3)
+                loadingCardsForCurrentBatch.unshift(loadingCard); 
+            }
+            
+            const imageReplacementPromises = newGeneratedUrls.map((imageUrl, localIndex) => {
+                return new Promise((resolve) => {
+                    // The loading card at 'localIndex' in loadingCardsForCurrentBatch corresponds to 'imageUrl'
+                    const loadingCardElement = loadingCardsForCurrentBatch[localIndex]; 
+
+                    if (!loadingCardElement) {
+                        console.error(`Error: No loading card found for localIndex ${localIndex}.`);
+                        resolve(); // Resolve to not block Promise.all
+                        return;
+                    }
+
+                    const newCard = document.createElement('div');
+                    newCard.className = 'image-card';
+                    newCard.style.animationDelay = `${localIndex * 100}ms`;
+
+                    // The global index for this image in allGeneratedImageUrls is its localIndex within this new batch,
+                    // because newGeneratedUrls was spliced at the beginning of allGeneratedImageUrls.
+                    const globalIndexInAllImages = localIndex;
+
+                    newCard.addEventListener('click', () => openModal(globalIndexInAllImages));
+
+                    const imageContainer = document.createElement('div');
+                    imageContainer.className = 'image-container';
+
+                    const img = document.createElement('img');
+                    img.className = 'generated-image';
+                    img.src = imageUrl;
+                    img.alt = `Generated image ${localIndex + 1}: ${currentPrompt}`;
+                    img.style.opacity = '0';
+                    img.style.filter = 'blur(10px)';
+
+                    img.onload = () => {
+                        handleImageLoad(img);
+                        resolve();
+                    };
+                    img.onerror = () => {
+                        handleImageError(img);
+                        resolve(); 
+                    };
+                    imageContainer.appendChild(img);
+
+                    const downloadBtn = document.createElement('button');
+                    downloadBtn.className = 'download-btn';
+                    downloadBtn.setAttribute('title', 'Download Image');
+                    downloadBtn.innerHTML = '<i class="fas fa-download"></i>';
+                    downloadBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        // Use globalIndexInAllImages to refer to the correct URL in the allGeneratedImageUrls array
+                        downloadImage(allGeneratedImageUrls[globalIndexInAllImages], globalIndexInAllImages); 
+                    };
+                    imageContainer.appendChild(downloadBtn);
+
+                    const likeBtn = document.createElement('button');
+                    likeBtn.className = 'like-btn';
+                    likeBtn.setAttribute('title', 'Like Image');
+                    likeBtn.innerHTML = '<i class="fas fa-heart"></i>';
+                    likeBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        // Use globalIndexInAllImages to refer to the correct image for liking
+                        likeImage(globalIndexInAllImages);
+                    };
+                    imageContainer.appendChild(likeBtn);
+
+                    newCard.appendChild(imageContainer);
+                    
+                    if (loadingCardElement.parentNode === imagesGrid) { // Ensure it's still in the DOM before replacing
+                         imagesGrid.replaceChild(newCard, loadingCardElement);
+                    } else {
+                         console.warn("Loading card not found in DOM for replacement, appending new card instead.", loadingCardElement);
+                         imagesGrid.appendChild(newCard); 
+                    }
+                });
+            });
+
+            try {
+                await Promise.all(imageReplacementPromises);
+            } catch (error) {
+                console.error("Error during image replacement:", error);
+                showMessageBox('Some images failed to load. Please try again.', 'error');
+            } finally {
+                isGenerating = false;
+                updateGenerateButton(false);
+                updateGenerationStats();
+            }
+        }
+
+        // Create enhanced prompt with style
+        function createEnhancedPrompt(prompt, style) {
+            let enhancedPrompt = prompt;
+            
+            if (style !== 'auto') {
+                const styleMap = {
+                    'realistic': 'photorealistic, high quality, detailed',
+                    'digital-art': 'digital art style, vibrant colors, detailed',
+                    'painting': 'oil painting style, artistic, brushstrokes',
+                    'anime': 'anime style, manga, japanese animation',
+                    '3d-render': '3D rendered, CGI, high quality render',
+                    'minimalist': 'minimalist style, clean, simple',
+                    'black-white': 'black and white, monochrome, high contrast',
+                    'sketch': 'pencil sketch, hand drawn, artistic sketch'
+                };
+                
+                enhancedPrompt += `, ${styleMap[style]}`;
+            }
+            
+            enhancedPrompt += ', high quality, detailed';
+            return enhancedPrompt;
+        }
+
+        // Update generate button state
+        function updateGenerateButton(loading) {
+            if (loading) {
+                generateBtn.innerHTML = '<i class="fas fa-spinner spin"></i> Generating Magic...';
+                generateBtn.disabled = true;
+            } else {
+                generateBtn.innerHTML = '<i class="fas fa-bolt"></i> Generate 4 Images';
+                generateBtn.disabled = false;
+            }
+        }
+
+        // Show images section
+        function showImagesSection() {
+            imagesSection.classList.remove('hidden');
+            imagesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // Create loading card
+        function createLoadingCard() {
+            const card = document.createElement('div');
+            card.className = 'image-card';
+            card.innerHTML = `
+                <div class="image-container">
+                    <div class="image-loading">
+                        <i class="fas fa-spinner spin" style="font-size: 2rem; color: #8b5cf6;"></i>
+                        <p style="color: #8b5cf6; font-weight: 500;">Generating...</p>
+                    </div>
+                </div>
+            `;
+            return card;
+        }
+
+        // Handle image load
+        function handleImageLoad(img) {
+            const loadingDiv = img.parentElement.querySelector('.image-loading');
+            if (loadingDiv) {
+                loadingDiv.style.display = 'none';
+            }
+            // Animate blur and opacity on load
+            img.style.opacity = '1';
+            img.style.filter = 'none';
+        }
+
+        // Handle image error
+        function handleImageError(img) {
+            const loadingDiv = img.parentElement.querySelector('.image-loading');
+            if (loadingDiv) {
+                loadingDiv.innerHTML = `
+                    <i class="fas fa-exclamation-triangle" style="font-size: 1.5rem; color: #ef4444;"></i>
+                    <p style="color: #ef4444; font-size: 0.9rem;">Failed to load</p>
+                    <button class="btn btn-outline" style="margin-top: 0.5rem; font-size: 0.8rem;" onclick="retryImage(this, '${img.src}')">
+                        Retry
+                    </button>
+                `;
+            }
+        }
+
+        // Retry image loading
+        function retryImage(button, imageUrlToRetry) {
+            const card = button.closest('.image-card');
+            const img = card.querySelector('.generated-image');
+            const loadingDiv = card.querySelector('.image-loading');
+            
+            loadingDiv.innerHTML = `
+                <i class="fas fa-spinner spin" style="font-size: 1.5rem; color: #8b5cf6;"></i>
+                <p style="color: #8b5cf6; font-size: 0.9rem;">Loading...</p>
+            `;
+            
+            // Reset blur and opacity for retry animation
+            img.style.opacity = '0';
+            img.style.filter = 'blur(10px)';
+
+            // Force reload the image
+            img.src = imageUrlToRetry;
+        }
+
+        // Download image
+        async function downloadImage(imageUrl, index) {
+            try {
+                const response = await fetch(imageUrl);
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `imagein-${Date.now()}-${index + 1}.png`;
+                document.body.appendChild(a);
+                a.click();
+                
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } catch (error) {
+                console.error('Download failed:', error);
+                showMessageBox('Download failed. Please try again.', 'error');
+            }
+        }
+
+        // Like image
+        function likeImage(index) {
+            // Add visual feedback
+            const button = event.target.closest('.like-btn'); 
+            if (button.style.color === 'rgb(239, 68, 68)') { // If already liked (red)
+                button.style.color = ''; // Reset to default (black/dark mode white)
+                button.innerHTML = '<i class="fas fa-heart"></i>'; // Solid heart
+            } else {
+                button.style.color = '#ef4444'; // Red for liked
+                button.innerHTML = '<i class="fas fa-heart"></i>'; // Solid heart
+            }
+            
+            // You can add actual like functionality here
+            console.log(`Liked/Unliked image at index ${index}`);
+        }
+
+        // Fullscreen Modal functions
+        function openModal(index) {
+            currentModalImageIndex = index;
+            modalImage.src = allGeneratedImageUrls[currentModalImageIndex];
+            imageModal.style.display = "flex"; // Use flex to center content
+            updateModalNavigation();
+        }
+
+        function closeModal() {
+            imageModal.style.display = "none";
+            modalImage.src = ""; // Clear image source
+        }
+
+        function updateModalNavigation() {
+            // Navigation buttons are hidden via CSS media query on mobile, so this only affects desktop
+            prevImageBtn.disabled = (currentModalImageIndex === 0);
+            nextImageBtn.disabled = (currentModalImageIndex === allGeneratedImageUrls.length - 1);
+        }
+
+        function showNextImage() {
+            if (currentModalImageIndex < allGeneratedImageUrls.length - 1) {
+                currentModalImageIndex++;
+                modalImage.src = allGeneratedImageUrls[currentModalImageIndex];
+                updateModalNavigation();
+            }
+        }
+
+        function showPreviousImage() {
+            if (currentModalImageIndex > 0) {
+                currentModalImageIndex--;
+                modalImage.src = allGeneratedImageUrls[currentModalImageIndex];
+                updateModalNavigation();
+            }
+        }
+
+        // Swipe functionality for modal image
+        modalImage.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+        });
+
+        modalImage.addEventListener('touchend', (e) => {
+            const endX = e.changedTouches[0].clientX;
+            const diffX = endX - startX;
+            const swipeThreshold = 50; // Minimum distance for a swipe
+
+            if (imageModal.style.display === "flex") { // Only process swipe if modal is open
+                if (diffX > swipeThreshold) {
+                    // Swiped right (show previous image)
+                    showPreviousImage();
+                } else if (diffX < -swipeThreshold) {
+                    // Swiped left (show next image)
+                    showNextImage();
+                }
+            }
+        });
+
+        // Update generation stats
+        function updateGenerationStats() {
+            const prompt = promptInput.value.trim();
+            const aspectRatio = aspectRatioSelect.value;
+            const imageStyle = imageStyleSelect.value;
+            
+            if (!prompt && !isGenerating) {
+                generationStats.innerHTML = '';
+                return;
+            }
+
+            let statsHTML = `
+                <div class="stat-badge">
+                    <i class="fas fa-palette"></i>
+                    ${imageStyle === 'auto' ? 'Auto Style' : imageStyle.replace('-', ' ')}
+                </div>
+                <div class="stat-badge">
+                    <i class="fas fa-expand-arrows-alt"></i>
+                    ${aspectRatio}
+                </div>
+            `;
+
+            if (!isGenerating && generationStartTime) {
+                const generationTime = Math.round((Date.now() - generationStartTime) / 1000);
+                statsHTML += `
+                    <div class="stat-badge">
+                        <i class="fas fa-clock"></i>
+                        ${generationTime}s
+                    </div>
+                `;
+            }
+
+            generationStats.innerHTML = statsHTML;
+        }
+
+        // Show error message
+        function showError(message) {
+            imagesGrid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #ef4444;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Add some example prompts for inspiration
+        const examplePrompts = [
+            "A majestic dragon flying over a mystical forest at sunset",
+            "Cyberpunk city with neon lights reflecting on wet streets",
+            "Peaceful zen garden with cherry blossoms and koi pond",
+            "Space explorer discovering an alien planet with purple skies",
+            "Cozy coffee shop on a rainy day with warm lighting",
+            "Underwater coral reef with colorful tropical fish",
+            "Medieval castle on a cliff overlooking the ocean",
+            "Futuristic robot in a field of wildflowers"
+        ];
+
+        // Add placeholder cycling for inspiration
+        let placeholderIndex = 0;
+        setInterval(() => {
+            if (!promptInput.value) {
+                promptInput.placeholder = examplePrompts[placeholderIndex];
+                placeholderIndex = (placeholderIndex + 1) % examplePrompts.length;
+            }
+        }, 3000);
+
+        // Enhance prompt using Gemini API
+        async function enhancePrompt() {
+            const promptInput = document.getElementById('prompt');
+            const enhanceBtn = document.getElementById('enhanceBtn');
+            const currentPrompt = promptInput.value.trim();
+            
+            if (!currentPrompt) {
+                showMessageBox('Please enter a prompt first', 'warning');
+                return;
+            }
+            
+            // Update button state
+            enhanceBtn.disabled = true;
+            enhanceBtn.innerHTML = '<i class="fas fa-spinner spin"></i>'; // Only icon
+            
+            try {
+                // Use the provided API key
+                const apiKey = ""; 
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: `Enhance this image generation prompt to be more detailed, creative, and visually descriptive. Keep the core concept but add artistic details, lighting, composition, and style elements that would make for a stunning AI-generated image.
+                                Make it concise but rich in visual details.
+                                Original prompt: "${currentPrompt}"
+                                Enhanced prompt:`
+                            }]
+                        }],
+                        generationConfig: {
+                            temperature: 0.7,
+                            topK: 40,
+                            topP: 0.95,
+                            maxOutputTokens: 200,
+                        }
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('API response data:', data); // Log the response for debugging
+
+                // More robust check for data presence and structure
+                if (data.candidates && Array.isArray(data.candidates) && data.candidates.length > 0 &&
+                    data.candidates[0] && data.candidates[0].content && 
+                    data.candidates[0].content.parts && data.candidates[0].content.parts.length > 0) {
+                    const enhancedPrompt = data.candidates[0].content.parts[0].text.trim();
+                    promptInput.value = enhancedPrompt;
+                    
+                    // Add visual feedback
+                    promptInput.style.borderColor = '#10b981';
+                    promptInput.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+                    setTimeout(() => {
+                        promptInput.style.borderColor = '#8b5cf6';
+                        promptInput.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.1)';
+                    }, 2000);
+                } else {
+                    throw new Error('No enhanced prompt received or unexpected response structure from API');
+                }
+                
+            } catch (error) {
+                console.error('Error enhancing prompt:', error);
+                showMessageBox('Failed to enhance prompt. Please try again. Check console for details.', 'error');
+            } finally {
+                // Reset button state
+                enhanceBtn.disabled = false;
+                enhanceBtn.innerHTML = '<i class="fas fa-magic"></i>'; // Only icon
+            }
+        }
+
+        // Custom Message Box functions (instead of alert/confirm)
+        function showMessageBox(message, type = 'info') {
+            // Create a simple modal/div for messages
+            let msgBox = document.getElementById('messageBox');
+            if (!msgBox) {
+                msgBox = document.createElement('div');
+                msgBox.id = 'messageBox';
+                msgBox.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    padding: 15px 25px;
+                    border-radius: 8px;
+                    font-family: 'Segoe UI', sans-serif;
+                    font-size: 1rem;
+                    color: white;
+                    z-index: 2001;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    opacity: 0;
+                    transition: opacity 0.3s ease-in-out, top 0.3s ease-in-out;
+                `;
+                document.body.appendChild(msgBox);
+            }
+
+            let bgColor = '';
+            let iconHtml = '';
+            if (type === 'error') {
+                bgColor = '#ef4444';
+                iconHtml = '<i class="fas fa-times-circle"></i>';
+            } else if (type === 'warning') {
+                bgColor = '#f59e0b';
+                iconHtml = '<i class="fas fa-exclamation-triangle"></i>';
+            } else { // info
+                bgColor = '#3b82f6';
+                iconHtml = '<i class="fas fa-info-circle"></i>';
+            }
+
+            msgBox.style.backgroundColor = bgColor;
+            msgBox.innerHTML = `${iconHtml} <span>${message}</span>`;
+            msgBox.style.display = 'flex';
+            
+            // Animate in
+            setTimeout(() => {
+                msgBox.style.opacity = '1';
+                msgBox.style.top = '50px';
+            }, 10);
+
+            // Animate out and hide
+            setTimeout(() => {
+                msgBox.style.opacity = '0';
+                msgBox.style.top = '20px';
+                setTimeout(() => {
+                    msgBox.style.display = 'none';
+                }, 300); // Wait for transition to finish
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
