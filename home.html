@@ -1015,6 +1015,23 @@
     </div>
 
     <script>
+        // Register Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then((registration) => {
+        console.log('Service Worker registered with scope:', registration.scope);
+      })
+      .catch((error) => {
+        console.error('Service Worker registration failed:', error);
+      });
+  });
+}
+
+// Your existing JavaScript code follows below this block (e.g., global variables, functions)
+let isGenerating = false;
+// ... rest of your script
+        
         // Global variables
         let isGenerating = false;
         let generationStartTime = null;
